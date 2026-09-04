@@ -97,7 +97,7 @@ La chaîne SBT reste la configuration de référence du projet. Le script de com
 
 ## Déploiement sur un cluster
 
-Le déploiement suit la démarche du module 3 du cours : on se connecte en SSH au **nœud Edge**, on dépose les données dans HDFS, on y copie le JAR, puis on lance `spark-submit` avec YARN comme gestionnaire de ressources.
+Le déploiement se fait depuis le **nœud Edge** du cluster, auquel on se connecte en SSH : on y dépose les données dans HDFS, on y copie le JAR, puis on lance `spark-submit` avec YARN comme gestionnaire de ressources.
 
 ### 1. Déposer les données dans HDFS depuis le nœud Edge
 

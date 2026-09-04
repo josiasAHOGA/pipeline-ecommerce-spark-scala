@@ -60,13 +60,13 @@ Le jury peut interroger chaque étudiant sur le code écrit par un autre. Ces tr
 
 Vingt cinq ans appartient à la tranche Adulte. La période Night couvre 22h00 à 05h59. L'heure 17 fait partie des heures ouvrées. Les horodatages sont interprétés en UTC. La moyenne historique exclut la transaction courante et toutes celles du même instant. M+0 vaut toujours cent pour cent par construction. Ces conventions sont détaillées dans `CONTRIBUTIONS.md`, section Décisions techniques, et couvertes par la suite de régression.
 
-## Correspondance entre le cours et le projet
+## Aide mémoire technique : où se trouve chaque notion
 
-Le jury a enseigné ce cours. Savoir dire où chaque notion se retrouve dans le code vaut des points sur la « maîtrise du projet global ».
+Chaque membre peut être interrogé sur une partie écrite par un autre. Ce tableau donne, pour chaque notion du projet, le fichier et la fonction où la trouver.
 
-### Module 1, Introduction au Big Data
+### Socle Big Data et exécution distribuée
 
-| Notion enseignée | Où elle se retrouve |
+| Notion | Où elle se trouve dans le projet |
 | :-- | :-- |
 | Les 5V, en particulier Véracité | Toute la Partie 2 : la validation et le rapport de qualité traitent la véracité de la donnée |
 | HDFS, nœud Edge, commandes `hdfs dfs` | Section « Déploiement sur un cluster » du README |
@@ -74,9 +74,9 @@ Le jury a enseigné ce cours. Savoir dire où chaque notion se retrouve dans le 
 | Cluster Master, Worker, Edge | Le JAR se dépose sur le nœud Edge, les exécuteurs tournent sur les Workers |
 | Data pipeline : ingestion, traitement, visualisation | Bronze, Silver, Gold, puis le tableau de bord |
 
-### Module 2, le langage Scala
+### Langage Scala
 
-| Notion enseignée | Où elle se retrouve |
+| Notion | Où elle se trouve dans le projet |
 | :-- | :-- |
 | `val` immuable | Utilisé partout ; aucun `var` dans la logique métier |
 | Collections `Seq`, `Map`, `Set` | `Sources.frames` renvoie une `Seq`, `validateAll` une `Map`, `collect_set` côté Spark |
@@ -86,9 +86,9 @@ Le jury a enseigné ce cours. Savoir dire où chaque notion se retrouve dans le 
 | Fonctions et fonctions passées en argument | L'UDF `extractTimeFeatures`, et `timed` qui prend un bloc de code en paramètre |
 | `try` / `catch` | `DataIngestion.read` et la gestion d'erreur globale de `MainApp` |
 
-### Module 3, le Big Data avec Spark
+### API Spark
 
-| Notion enseignée | Où elle se retrouve |
+| Notion | Où elle se trouve dans le projet |
 | :-- | :-- |
 | SparkSession comme point d'entrée | `SparkSessionBuilder.build`, créée une seule fois |
 | Driver, Cluster Manager, Executor | `spark-submit --master yarn`, mémoire et cœurs paramétrés |
@@ -105,17 +105,13 @@ Le jury a enseigné ce cours. Savoir dire où chaque notion se retrouve dans le 
 | `persist` et cache des exécuteurs | `SparkOptimizations` : `cache`, `MEMORY_AND_DISK_SER`, `unpersist` |
 | Structure SBT et `spark-submit` | `build.sbt`, `dist/ecommerce-analytics.jar` |
 
-### Les deux notions que le sujet exige et que le cours n'aborde pas
+### Les deux points les plus techniques du projet
 
-Le cours ne traite ni les **UDF** ni les **fonctions de fenêtrage**. Ce sont donc les deux points sur lesquels le jury sondera le plus, puisqu'il faut les avoir appris seuls. Ils sont couverts par les diapositives 7, 8 et 9 et par cinq cas de la suite de régression.
+L'**UDF temporelle** et les **fonctions de fenêtrage** sont les mécanismes les moins courants que nous ayons mis en œuvre, et ceux sur lesquels une question est la plus probable. Ils sont traités aux diapositives 7, 8 et 9, et couverts par cinq cas de la suite de régression.
 
 ### Pourquoi Dataset et non RDD
 
-Le cours compare les trois API. Notre réponse reprend son propre tableau : le `Dataset` cumule le typage fort des objets `case class`, la vérification à la compilation et l'optimiseur Catalyst. Le RDD n'a pas d'optimiseur et son typage est faible. Nous n'avions aucun besoin de descendre au niveau RDD, puisque toutes nos opérations sont structurées.
-
-### Le lien avec le TP du module 3
-
-Le dernier travail pratique du cours porte sur `ecommerce_sales.csv` : chiffre d'affaires par commande, par catégorie, par région, top produits, jointure ventes et clients, tranches d'âge, top 5 clients. Notre projet en est la version étendue et industrialisée. Le dire en ouverture aide le jury à situer immédiatement le travail.
+Le `Dataset` cumule trois avantages que le RDD n'a pas : le typage fort par les objets `case class`, la vérification des colonnes à la compilation et l'optimiseur Catalyst. Le RDD reste utile pour des transformations non structurées, ce qui n'est le cas d'aucune de nos opérations. Descendre à ce niveau nous aurait coûté l'optimiseur sans rien apporter.
 
 ## Scénario de démonstration, 5 minutes
 

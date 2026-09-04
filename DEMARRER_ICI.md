@@ -62,7 +62,7 @@ Le pipeline accepte une étape en argument : `all`, `ingestion`, `transformation
 | `CONTRIBUTIONS.md` | Journal technique par module, décisions justifiées, relectures croisées |
 | `COUVERTURE_SUJET.md` | Correspondance question par question avec l'énoncé |
 | `VERIFICATION.md` | Vérifications réalisées et résultats observés |
-| `GUIDE_SOUTENANCE.md` | Déroulé de la soutenance et correspondance avec le cours |
+| `GUIDE_SOUTENANCE.md` | Déroulé de la soutenance et aide mémoire technique |
 | `soutenance/` | Support de présentation |
 
 ## Points de vigilance
