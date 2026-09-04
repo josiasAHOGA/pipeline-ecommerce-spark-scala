@@ -28,7 +28,7 @@ Fichiers dont Eudoxie est propriétaire :
 | Champ | Valeur |
 | :-- | :-- |
 | Nom et prénom | BAMBA Issouf |
-| Adresse e mail |  |
+| Adresse e mail | ibamba57@gmail.com |
 | Nom configuré dans Git (`git config user.name`) | Issouf BAMBA |
 | Parties du sujet | Partie 3 |
 | Questions traitées | 3.1, 3.2, 3.3, 3.4 (bonus) |

@@ -62,30 +62,49 @@ La méthode générique `read` enveloppe chaque lecture dans un `try` / `catch` 
 
 **`analytics/TimeFeatures.scala`.** L'UDF `extractTimeFeatures` transforme une chaîne `yyyyMMddHHmmss` en une structure de six champs. Points délicats :
 
-* Le parsing utilise `ResolverStyle.STRICT`. En mode indulgent, le 29 février 2025 serait silencieusement décalé au 1er mars.
-* La fonction renvoie `null` et non une exception sur une entrée nulle, vide ou mal formée. Une UDF qui lève une exception fait tomber la tâche Spark entière.
+* Le parsing utilise `ResolverStyle.STRICT` et le motif `uuuuMMddHHmmss`. En mode indulgent, le 29 février 2025, qui n'existe pas, serait silencieusement décalé au 1er mars et une donnée fausse entrerait dans le pipeline. Le mode strict impose `uuuu` plutôt que `yyyy`, car il exige une année sans ambiguïté d'ère.
+* La fonction renvoie `null` et non une exception sur une entrée nulle, vide ou mal formée. Une UDF qui lève une exception fait tomber la tâche Spark entière, donc tout le job, pour une seule ligne sale, alors que le sujet garantit la présence d'horodatages invalides.
+* La logique métier est écrite dans des fonctions pures, `parse`, `dayPeriod`, `isWeekend`, `isWorkingHours` et `features`. L'UDF n'est qu'une enveloppe. Deux conséquences concrètes : `DataValidation` réutilise `parse` sans dépendre de Spark, et les frontières horaires se testent sans SparkSession.
+* Les bornes ne sont pas dans le code : elles sont lues une fois côté pilote et transportées par la case class sérialisable `TimeSettings`. Capturer directement l'objet `Config` dans la fermeture de l'UDF provoquerait une `NotSerializableException` au moment de l'envoi des tâches aux exécuteurs. La langue des libellés vient de `app.time.locale`, avec repli sur le français si la clé est absente, ce qui illustre le mécanisme de valeur par défaut demandé par la Question 7.1.
 * Le sujet ne dit rien de la plage entre minuit et six heures. Nous la classons en `Night`, et cette convention est testée explicitement aux frontières 21h59, 22h00 et minuit.
+* Les libellés sont capitalisés selon la locale, « samedi » devient « Samedi », pour être lisibles directement dans les CSV et le tableau de bord.
 
 **`analytics/DataTransformation.scala`.** Deux responsabilités : l'enrichissement par jointures, puis les fenêtres de comportement.
 
-Pour les jointures, chaque table de référence reçoit un drapeau `_user_found`, `_product_found`, `_merchant_found` avant la jointure `left`. Après la jointure, un drapeau resté nul signale une référence absente et alimente `rejection_reason`. Point délicat : une jointure `inner` aurait donné le même périmètre final, mais aurait supprimé les lignes sans laisser de trace. Ici les rejets partent dans `join_rejections` avec leur motif.
+Stratégie de jointure retenue, table par table, comme demandé par la Question 3.2 :
 
-Les colonnes homonymes (`name`, `category`) sont renommées avant la jointure, sinon Spark produit des colonnes ambiguës impossibles à sélectionner.
+| Table | Type | Clé | Justification |
+| :-- | :-- | :-- | :-- |
+| `transactions` | table de départ | — | table de faits : elle impose la granularité, une ligne de sortie par transaction |
+| `users` | `left` | `user_id` | conserver la transaction pour pouvoir expliquer une référence absente au lieu de la faire disparaître |
+| `products` | `left` | `product_id` | même raison, plus récupération du prix, de la note et du stock |
+| `merchants` | `left` | `merchant_id` | même raison, plus diffusion de la table par `broadcast` |
 
-Pour le fenêtrage, trois fenêtres distinctes coexistent :
+Chaque table de référence reçoit un drapeau constant `_user_found`, `_product_found`, `_merchant_found` avant la jointure. Après la jointure, un drapeau resté nul prouve que la référence n'a pas été appariée, et alimente `rejection_reason`. Tester une colonne métier ne suffirait pas, puisqu'elle peut être nulle dans la source elle même. Point délicat : une jointure `inner` aurait donné exactement le même périmètre final, mais aurait supprimé les lignes sans laisser de trace. Ici les rejets partent dans `join_rejections` avec leur motif, et les drapeaux internes sont retirés des deux sorties.
+
+Les clés sont passées sous la forme `Seq("user_id")` et non `t("user_id") === u("user_id")`, afin que Spark ne conserve qu'un seul exemplaire de la colonne de jointure. Les colonnes homonymes (`name`, `category`, ainsi que le `merchant_id` du catalogue renommé `catalog_merchant_id`) sont renommées avant la jointure, sinon Spark produit des colonnes ambiguës impossibles à sélectionner.
+
+Les trois référentiels sont diffusés par `broadcast` lorsque l'optimisation est active : 600 marchands, 6 000 produits et 12 000 utilisateurs tiennent en mémoire d'exécuteur, alors que sans diffusion chaque jointure trierait et échangerait les 138 000 transactions sur le réseau. Le seuil automatique `spark.sql.autoBroadcastJoinThreshold` étant fixé à -1 dans la configuration, la diffusion est un choix explicite et mesurable, et le mode `benchmark` rejoue le pipeline sans elle.
+
+`addBehavior` déclare son contrat en entrée : les sept colonnes qu'elle exige sont vérifiées par un `require`. Sans ce garde fou, un nom de colonne absent ne se manifesterait qu'au premier `count`, très loin de sa cause.
+
+Pour le fenêtrage, quatre fenêtres distinctes coexistent :
 
 | Fenêtre | Définition | Usage |
 | :-- | :-- | :-- |
 | `ordered` | `partitionBy(user_id).orderBy(epoch_seconds, transaction_id)` | `row_number` et `lag` |
-| `rolling` | `range.rangeBetween(-7*86400+1, 0)` | Montant cumulé et jours actifs sur sept jours |
-| `historical` | `range.rangeBetween(unboundedPreceding, -1)` | Moyenne historique strictement antérieure |
+| `parUtilisateur` | `partitionBy(user_id)`, sans ordre | total des transactions du client |
+| `glissante` | `rangeBetween(-7*86400+1, 0)` sur `epoch_seconds` | montant cumulé et jours actifs sur sept jours |
+| `historique` | `rangeBetween(unboundedPreceding, -1)` | moyenne strictement antérieure à la transaction |
 
 Points délicats :
 
 * `rangeBetween` porte sur les secondes écoulées, pas sur un nombre de lignes. Trois achats dans la même journée ne font pas sortir les autres de la fenêtre, ce qu'un `rowsBetween(-6, 0)` aurait fait.
 * `active_days_7d` compte des dates distinctes via `collect_set`, pas des transactions. Deux achats le même jour comptent pour un seul jour actif.
 * La borne haute de `historical` est `-1` et non `0` : la transaction courante est exclue de sa propre moyenne, sinon le calcul de l'écart au panier moyen serait circulaire. Les transactions au même timestamp sont exclues elles aussi, ce qui évite toute fuite d'information future.
-* `is_suspicious` exige au moins deux signaux sur quatre. Chaque signal est encadré par un `coalesce(..., lit(0))` : sans lui, un premier achat sans historique rendrait la somme nulle et non nulle au sens booléen.
+* Le classement `ordered` départage les ex æquo par `transaction_id`. Sans ce second critère, `row_number` et `lag` varieraient d'une exécution à l'autre pour deux achats au même horodatage, et les résultats ne seraient pas reproductibles.
+* Le délai entre achats est exposé sur deux échelles assumées. `days_since_previous` est un nombre de jours entiers calculé par `datediff`, formulation exacte du sujet. `seconds_since_previous` et `hours_since_previous` conservent la précision nécessaire à la règle des cinq minutes de la Question 3.4, qu'un arrondi au jour rendrait inapplicable.
+* `is_suspicious` exige au moins deux signaux sur quatre. Les quatre signaux passent par le même utilitaire `drapeau`, qui applique `coalesce(..., lit(0))` : en SQL, `null + 1` vaut `null`, donc sans lui un premier achat sans historique, ou un `day_period` nul, rendrait `suspicion_flags` et `is_suspicious` indéterminés au lieu de valoir zéro. Un test couvre explicitement le cas du `day_period` nul.
 
 ### Membre C : analytique, optimisations et orchestration
 
@@ -114,9 +133,23 @@ Travaux effectués : À COMPLÉTER.
 Difficultés rencontrées : À COMPLÉTER. Pistes vécues sur ce module : le typage `Option` pour distinguer une valeur absente d'un zéro, la lecture `FAILFAST` d'un JSON contenant un champ tableau, et la différence entre un orphelin du fichier brut et une référence rejetée à la jointure.
 
 ### BAMBA Issouf, Membre B
-Charge estimée : À COMPLÉTER heures.
-Travaux effectués : À COMPLÉTER.
-Difficultés rencontrées : À COMPLÉTER. Pistes vécues sur ce module : rendre l'UDF insensible aux horodatages invalides, comprendre pourquoi `rangeBetween` doit porter sur des secondes et non sur des lignes, et exclure la transaction courante de sa propre moyenne historique.
+Charge estimée : 14 heures.
+
+Travaux effectués :
+
+* Questions 3.1 à 3.4 : `TimeFeatures.scala` et `DataTransformation.scala`, soit l'UDF temporelle, les quatre jointures d'enrichissement, les quatre fenêtres de comportement et la détection de transactions suspectes.
+* Extraction de la logique temporelle en fonctions pures et introduction de la case class sérialisable `TimeSettings`, pour supprimer toute capture de l'objet `Config` dans la fermeture de l'UDF.
+* Extension de la diffusion `broadcast` aux trois référentiels, contrat d'entrée de `addBehavior` vérifié par `require`, et neutralisation des valeurs nulles dans le calcul de `suspicion_flags`.
+* Quatre cas de régression ajoutés à `RegressionSuite` sur le périmètre de la Partie 3 : libellés de jour et de mois, contrat d'entrée, rang et délai en jours entiers, `day_period` nul.
+* Outillage de démonstration macOS : `scripts/setup-macos.sh`, `scripts/env-macos.sh`, `scripts/run-macos.sh` et `scripts/uninstall-macos.sh`, pendants des scripts Windows déjà présents.
+* Relectures croisées des Parties 2, 4, 5 et 6.
+
+Difficultés rencontrées :
+
+* Rendre l'UDF insensible aux horodatages invalides. Première version : une exception sur une date impossible faisait échouer tout le job. Correction : `Try` plus `Option`, et retour de `null` sur une entrée non exploitable.
+* Comprendre pourquoi `rangeBetween` doit porter sur des secondes et non sur des lignes. Un `rowsBetween(-6, 0)` compte six achats, pas sept jours : trois achats le même jour faisaient sortir de la fenêtre des transactions encore récentes.
+* Exclure la transaction courante de sa propre moyenne historique. Avec une borne haute à `0`, une transaction anormale tirait sa propre moyenne vers le haut et ne pouvait plus être détectée. La borne `-1` seconde exclut aussi les transactions du même instant, donc toute fuite d'information.
+* Diagnostiquer un `is_suspicious` nul plutôt que zéro sur les premières transactions de chaque client : conséquence de l'arithmétique SQL sur les valeurs nulles, résolue par un `coalesce` sur chacun des quatre signaux.
 
 ### AHOGA Josias, Membre C
 Charge estimée : À COMPLÉTER heures.
@@ -130,12 +163,12 @@ Chaque entrée est datée et signée par le relecteur, qui n'est jamais l'auteur
 | Date | Module | Auteur | Relecteur | Points contrôlés | Remarques et suites | Commande de vérification |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | À COMPLÉTER | Parties 1 et 7 | Eudoxie | Josias | Aucun chemin ni seuil codé en dur, `reference.conf` couvre toutes les clés, l'assembly n'embarque pas Spark | À COMPLÉTER | `sbt assembly` puis `unzip -l` sur le JAR |
-| À COMPLÉTER | Partie 2, ingestion | Eudoxie | Issouf | Les quatre stratégies de lecture, le message d'erreur nomme la source, les volumes lus correspondent au sujet | À COMPLÉTER | `.\make.ps1 run -Stage ingestion` |
-| À COMPLÉTER | Partie 2, validation | Eudoxie | Issouf | Une ligne nulle est rejetée, un motif multiple est concaténé, le taux de rejet n'est pas nul | À COMPLÉTER | Lecture de `output/csv/rejected_transactions` |
+| 2026-09-04 | Partie 2, ingestion | Eudoxie | Issouf | Les quatre stratégies de lecture, le message d'erreur nomme la source, les volumes lus correspondent au sujet | Conforme. Volumes relus : 138 047, 12 000, 6 000, 600. Remarque transmise : le `count` de `DataIngestion.read` sert aussi de déclencheur d'erreur, ce qui mérite le commentaire déjà présent. | `bash scripts/run-macos.sh ingestion` |
+| 2026-09-04 | Partie 2, validation | Eudoxie | Issouf | Une ligne nulle est rejetée, un motif multiple est concaténé, le taux de rejet n'est pas nul | Conforme. Taux de rejet non nuls sur les quatre jeux. Vérifié qu'une transaction violant deux règles porte bien deux motifs concaténés. | Lecture de `output/csv/rejected_transactions` |
 | À COMPLÉTER | Partie 3, UDF | Issouf | Eudoxie | Entrée nulle, vide, date impossible, frontières 21h59 et 22h00 | À COMPLÉTER | `sbt test`, cas « frontieres exactes de day_period » |
 | À COMPLÉTER | Partie 3, fenêtrage | Issouf | Eudoxie | La fenêtre porte sur des secondes, les jours actifs sont distincts, la moyenne n'anticipe pas | À COMPLÉTER | `sbt test`, cas « fenetre de sept jours » |
-| À COMPLÉTER | Partie 4 | Josias | Issouf | M+0 vaut cent pour cent, un mois creux vaut zéro, les horizons non observables sont exclus, les scores RFM sont reproductibles | À COMPLÉTER | Lecture de `output/csv/cohort_matrix` |
-| À COMPLÉTER | Parties 5 et 6 | Josias | Eudoxie et Issouf | `unpersist` dans un `finally`, argument inconnu géré, durées enregistrées par étape | À COMPLÉTER | `.\make.ps1 run -Stage benchmark` |
+| 2026-09-04 | Partie 4 | Josias | Issouf | M+0 vaut cent pour cent, un mois creux vaut zéro, les horizons non observables sont exclus, les scores RFM sont reproductibles | Conforme. Remarque transmise et acceptée : `merchants` consomme `is_suspicious` et `age_group`, colonnes produites par la Partie 3 ; le contrat entre les deux modules est désormais vérifié par le `require` de `addBehavior`. | Lecture de `output/csv/cohort_matrix` |
+| 2026-09-04 | Parties 5 et 6 | Josias | Eudoxie et Issouf | `unpersist` dans un `finally`, argument inconnu géré, durées enregistrées par étape | Conforme. Le drapeau `optimized` traverse bien `DataTransformation`, ce qui rend le mode `benchmark` honnête. Argument inconnu : aide affichée, aucune SparkSession ouverte. | `bash scripts/run-macos.sh benchmark` |
 
 ## Traçabilité des vérifications
 
@@ -143,7 +176,7 @@ Les chiffres ci dessous proviennent d'exécutions réelles et se reproduisent av
 
 | Contrôle | Résultat observé | Commande |
 | :-- | :-- | :-- |
-| Suite de régression | 16 cas, 0 échec | `sbt test` |
+| Suite de régression | 20 cas, 0 échec | `sbt test` |
 | Lignes lues | 138 047 transactions, 12 000 users, 6 000 products, 600 merchants | `.\make.ps1 run -Stage ingestion` |
 | Rejets de validation | 1 890 transactions, 345 users, 179 products, 14 merchants | `output/csv/quality_report` |
 | Rejets de jointure | 11 406 | trace `ENRICHISSEMENT` du pipeline |
@@ -151,6 +184,7 @@ Les chiffres ci dessous proviennent d'exécutions réelles et se reproduisent av
 | Périmètre analysé | 124 751 transactions, 49 897 506,62 EUR, 10 193 clients, 586 marchands | `output/csv/summary` |
 | Durée du pipeline complet | environ 123 secondes en `local[2]` avec 3 Go | `output/csv/execution_timings` |
 | Écart avant et après optimisations | 84,84 % sur le total, une étape plus lente | `output/csv/benchmark_comparison` |
+| Reproduction sur poste macOS Apple Silicon | mêmes chiffres à l'unité : 124 751 transactions, 49 897 506,62 EUR, 3 760 suspectes, 512 incohérences catalogue | `bash scripts/run-macos.sh all` puis `output/csv/summary` |
 
 ## Historique Git
 
@@ -202,3 +236,11 @@ Les utilisateurs sans achat retenu n'ont pas de score RFM.
 19. `Makefile` comme interface unique : les commandes longues de `sbt` et de `spark-submit` sont regroupées derrière des cibles courtes (`make test`, `make run`, `make dashboard`). Les trois membres exécutent exactement les mêmes commandes, ce qui supprime une source classique d'écarts entre postes.
 
 20. Tableau de bord HTML autonome : les résultats Gold sont restitués dans une page unique, sans dépendance réseau et sans serveur. Le jury voit les indicateurs métier au lieu de lire des fichiers CSV en console. La page est régénérée à partir des sorties réelles du pipeline, jamais saisie à la main.
+
+21. Diffusion explicite des trois référentiels : `users`, `products` et `merchants` sont marqués `broadcast` dans `DataTransformation` lorsque l'optimisation est active. Le seuil automatique étant désactivé (`spark.sql.autoBroadcastJoinThreshold = -1`), sans ce marquage chaque jointure trierait et échangerait les 138 000 transactions sur le réseau, alors que les trois tables réunies pèsent moins de vingt mille lignes. Le mode `benchmark` rejoue le pipeline sans diffusion, ce qui rend le gain mesurable au lieu d'être affirmé.
+
+22. Délai entre achats exposé sur deux échelles : `days_since_previous` en jours entiers par `datediff`, formulation littérale du sujet, et `seconds_since_previous` avec `hours_since_previous` pour la précision. La règle de suspicion « moins de cinq minutes » de la Question 3.4 serait inapplicable sur un délai arrondi au jour.
+
+23. Paramètres temporels transportés par une case class sérialisable : `TimeFeatures.TimeSettings` est construit une fois côté pilote, puis capturé par l'UDF. Capturer l'objet `Config` lui même provoquerait une `NotSerializableException` à l'envoi des tâches. C'est aussi ce qui rend la logique testable sans SparkSession.
+
+24. Outillage de démonstration macOS confiné : `scripts/setup-macos.sh` installe JDK 17, sbt et Spark dans le seul répertoire `~/.ecommerce-demo`, caches de dépendances compris, sans sudo, sans Homebrew et sans toucher `~/.sbt` ni `~/.ivy2`. `scripts/uninstall-macos.sh` supprime l'ensemble en une commande. Un poste de démonstration retrouve donc son état initial, ce qu'une installation système ne garantit pas.
