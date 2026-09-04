@@ -152,7 +152,7 @@ Difficultés rencontrées :
 * Diagnostiquer un `is_suspicious` nul plutôt que zéro sur les premières transactions de chaque client : conséquence de l'arithmétique SQL sur les valeurs nulles, résolue par un `coalesce` sur chacun des quatre signaux.
 
 ### AHOGA Josias, Membre C
-Charge estimée : 4 heures.
+Charge estimée : 20 heures.
 
 Travaux effectués :
 
