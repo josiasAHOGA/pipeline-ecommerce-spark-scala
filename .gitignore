@@ -1,0 +1,16 @@
+target/
+project/target/
+project/project/
+.idea/
+.bsp/
+.metals/
+.runtime/
+spark-warehouse/
+output/
+*.log
+target/portable/
+target/test-reports/
+output_verif/
+
+# Fichiers de verrouillage Office
+~$*
