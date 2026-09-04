@@ -152,9 +152,23 @@ Difficultés rencontrées :
 * Diagnostiquer un `is_suspicious` nul plutôt que zéro sur les premières transactions de chaque client : conséquence de l'arithmétique SQL sur les valeurs nulles, résolue par un `coalesce` sur chacun des quatre signaux.
 
 ### AHOGA Josias, Membre C
-Charge estimée : À COMPLÉTER heures.
-Travaux effectués : À COMPLÉTER.
-Difficultés rencontrées : À COMPLÉTER. Pistes vécues sur ce module : générer la grille des mois observables pour la rétention, constater l'effet du `broadcast` explicite une fois le seuil automatique désactivé, et libérer le cache dans un bloc `finally`.
+Charge estimée : 4 heures.
+
+Travaux effectués :
+
+* Questions 4.1 à 4.4 : `Analytics.scala`, soit les indicateurs par marchand avec commission, les deux classements `dense_rank` par catégorie et par région, la matrice de cohortes mensuelles et la segmentation RFM par quintiles.
+* Questions 5.1 à 5.3 : `SparkOptimizations.scala`, soit le cache des résultats réutilisés, la persistance des transactions enrichies, la diffusion explicite des trois référentiels, l'exécution adaptative et la libération du cache.
+* Questions 6.1 et 6.2 : `MainApp.scala` et `ResultWriter.scala`, soit l'orchestration des étapes, le chronométrage par étape, le mode `benchmark` comparant les deux configurations, et le traitement des arguments par filtrage de motifs.
+* Restitution : `DashboardReport.scala`, page HTML autonome écrite à partir des seuls DataFrame Gold, en thème clair et en thème sombre.
+* Relectures des Parties 1, 2 et 7, consignées dans le journal ci dessous.
+
+Difficultés rencontrées :
+
+* La matrice de rétention perdait les mois sans achat. Un mois creux disparaissait au lieu de valoir zéro, ce qui faussait la courbe. La grille des couples cohorte et mois observable est désormais générée explicitement, puis jointe en `left`.
+* Les horizons non observables faussaient le classement des cohortes : une cohorte récente n'a pas de M+3, et la compter comme un échec avantageait les cohortes anciennes. Ces horizons sont exclus du calcul.
+* Le `broadcast` restait invisible dans le plan d'exécution tant que le seuil automatique était actif. Le passer à -1 rend la diffusion explicite et mesurable.
+* L'écriture des transactions enrichies sur huit partitions a été essayée puis retirée : sur `local[2]`, l'étape passait de 30,70 s à 41,42 s. Le résultat négatif est conservé dans `VERIFICATION.md` plutôt que masqué.
+* La mesure de performance varie de 37 % d'une exécution à l'autre sur un poste non dédié. Cette dispersion est documentée, et aucune conclusion n'est tirée d'un écart inférieur à 30 %.
 
 ## Journal des relectures croisées
 
