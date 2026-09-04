@@ -1,0 +1,73 @@
+# Intégration continue, EcommerceAnalytics, Groupe 9
+# Compile, teste et empaquette le projet à chaque push et à chaque pull request.
+# GitHub Actions est gratuit pour un dépôt public.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilation, tests et JAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupération des sources
+        uses: actions/checkout@v4
+
+      - name: Installation de Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: sbt
+
+      - name: Installation de SBT
+        uses: sbt/setup-sbt@v1
+
+      - name: Compilation
+        run: sbt compile
+
+      - name: Suite de régression
+        run: sbt test
+
+      - name: Construction du JAR exécutable
+        run: sbt assembly
+
+      - name: Publication du JAR comme artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecommerce-analytics-jar
+          path: target/scala-2.12/ecommerce-analytics.jar
+          if-no-files-found: error
+
+  controles:
+    name: Contrôles de cohérence du dépôt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupération des sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Vérification des livrables obligatoires
+        run: |
+          for f in README.md EQUIPE.md CONTRIBUTIONS.md build.sbt \
+                   src/main/resources/application.conf; do
+            if [ ! -f "$f" ]; then
+              echo "Livrable manquant : $f"
+              exit 1
+            fi
+          done
+          echo "Tous les livrables obligatoires sont présents."
+
+      - name: Décompte des commits par auteur
+        run: |
+          echo "Le sujet exige au minimum quatre commits par membre."
+          git shortlog -sne --all

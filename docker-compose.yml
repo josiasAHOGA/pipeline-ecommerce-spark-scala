@@ -1,0 +1,33 @@
+# EcommerceAnalytics, Groupe 9
+# Usage :
+#   docker compose run --rm pipeline            (pipeline complet)
+#   docker compose run --rm pipeline ingestion  (une seule étape)
+#   docker compose run --rm benchmark           (comparaison sans / avec optimisations)
+#
+# Les résultats sont écrits dans le dossier ./output du poste hôte grâce au
+# volume monté ci dessous : ils restent lisibles après l'arrêt du conteneur.
+
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: groupe9/ecommerce-analytics:1.0.0
+    container_name: ecommerce-analytics
+    volumes:
+      - ./output:/opt/ecommerce/output
+      - ./data:/opt/ecommerce/data:ro
+    environment:
+      SPARK_LOCAL_IP: 127.0.0.1
+    command: ["all"]
+
+  benchmark:
+    image: groupe9/ecommerce-analytics:1.0.0
+    depends_on:
+      - pipeline
+    volumes:
+      - ./output:/opt/ecommerce/output
+      - ./data:/opt/ecommerce/data:ro
+    environment:
+      SPARK_LOCAL_IP: 127.0.0.1
+    command: ["benchmark"]
