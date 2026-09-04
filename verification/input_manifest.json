@@ -1,0 +1,82 @@
+[
+  {
+    "file": "data/merchants.csv",
+    "bytes": 37225,
+    "sha256": "6c014f04e594417cf00bf1e3651a26c4e20b735cf3d0950cf225be607246d41c"
+  },
+  {
+    "file": "data/products.parquet/_SUCCESS",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "data/products.parquet/part-00000-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20654,
+    "sha256": "48f19d26131477869801c03af53c5a31163def7e03438f96aa26645c215a82e4"
+  },
+  {
+    "file": "data/products.parquet/part-00001-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20624,
+    "sha256": "254a42030d7459b3e7026514e0be360065cf8a91d9b1efc09ff1a6c24d881326"
+  },
+  {
+    "file": "data/products.parquet/part-00002-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20698,
+    "sha256": "c7d19279bb5c6bb1a4dd08e9bd54194382723777442e949d7decb43f455b67bf"
+  },
+  {
+    "file": "data/products.parquet/part-00003-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20713,
+    "sha256": "c906af54d6b39aa9751d65f374ff9e4cee8490db77f38b1839aa51c52287c6ee"
+  },
+  {
+    "file": "data/products.parquet/part-00004-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20675,
+    "sha256": "ae4fe04b03e8670e85df3aa3307a55aeb24f7beb57c6a737666b86595bfcb41a"
+  },
+  {
+    "file": "data/products.parquet/part-00005-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20740,
+    "sha256": "e60d4a6ade381521dc24842420ad5a29dd4638f723a9e1385276df94d8f8689a"
+  },
+  {
+    "file": "data/products.parquet/part-00006-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20691,
+    "sha256": "e013c1846f42bbc07082ce4b09c44ad04dd73f1a6a4468cc07232c360cf2e7a1"
+  },
+  {
+    "file": "data/products.parquet/part-00007-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20707,
+    "sha256": "7b3d472fa18695b7f37ef41def26dcb53659bdc813ad3cd4f3f1aab6cfa50ebd"
+  },
+  {
+    "file": "data/products.parquet/part-00008-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20742,
+    "sha256": "60930d8fd0af0917460f4ba0b8d3665823588b3677c220b154351c96ccb2a633"
+  },
+  {
+    "file": "data/products.parquet/part-00009-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20708,
+    "sha256": "ad352c9a4bf8d6e59b263178bae4aeaf9b00f7d8fd17eb9c62867fd0929b41cb"
+  },
+  {
+    "file": "data/products.parquet/part-00010-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20780,
+    "sha256": "6ad3b1114827841aae384b81e22f6869a955c32297a0901a4897c377d38d58e4"
+  },
+  {
+    "file": "data/products.parquet/part-00011-e913dd8f-7a8a-4d1c-9087-32effcc6b21b-c000.snappy.parquet",
+    "bytes": 20814,
+    "sha256": "24e72da6343a5a9e0aed74e3e58ff1ecfb0d57ad2f6229c503df662e9214ddfb"
+  },
+  {
+    "file": "data/transactions.csv",
+    "bytes": 10631058,
+    "sha256": "59757b4d1e659093a2d22d1e31e20dbfb5a3586d2ccd6d87b0a8be581f364de9"
+  },
+  {
+    "file": "data/users.json",
+    "bytes": 2315626,
+    "sha256": "1a76aa72abd68395ec521f46e47f1584f1adddb7aff1e32cb12fdf9920edc0dd"
+  }
+]
