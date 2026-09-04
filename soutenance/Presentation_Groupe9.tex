@@ -2,15 +2,15 @@
 %  Soutenance du projet final Data Engineer, Spark et Scala
 %  Groupe 9 : ABOUTA Eudoxie, BAMBA Issouf, AHOGA Josias
 %
-%  Compilation : pdfLaTeX (Overleaf, menu Recompile)
-%  Aucun paquet exotique, aucune image externe.
+%  Compilation : pdfLaTeX (Overleaf, bouton Recompile)
+%  Aucune image externe, aucun paquet exotique.
 % =====================================================================
 \documentclass[aspectratio=169,11pt]{beamer}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
-\usepackage{lmodern}
+\usepackage{cmbright}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{xcolor}
@@ -20,11 +20,13 @@
 % ---------------------------------------------------------------- couleurs
 \definecolor{indigo}{HTML}{2D288C}
 \definecolor{indigofonce}{HTML}{221E69}
-\definecolor{indigonuit}{HTML}{171446}
-\definecolor{lavande}{HTML}{A9A5D6}
-\definecolor{lavandepale}{HTML}{E9E8F4}
-\definecolor{encre}{HTML}{16182B}
-\definecolor{gris}{HTML}{61657C}
+\definecolor{grisbloc}{HTML}{EFEFF5}
+\definecolor{encre}{HTML}{1A1C2B}
+\definecolor{gris}{HTML}{6A6F82}
+\definecolor{vert}{HTML}{1E8E5A}
+\definecolor{vertpale}{HTML}{D6EDE1}
+\definecolor{rouge}{HTML}{B5322E}
+\definecolor{ambre}{HTML}{C98A1B}
 
 % ---------------------------------------------------------------- theme
 \usetheme{default}
@@ -32,43 +34,46 @@
 \setbeamertemplate{navigation symbols}{}
 \setbeamercolor{structure}{fg=indigo}
 \setbeamercolor{normal text}{fg=encre}
-\setbeamercolor{framesubtitle}{fg=indigofonce}
-\setbeamerfont{framesubtitle}{size=\small,series=\bfseries}
-\setbeamertemplate{itemize item}{\color{indigo}\rule[0.32ex]{1.8mm}{0.9pt}}
-\setbeamertemplate{itemize subitem}{\color{indigofonce}\rule[0.32ex]{1.2mm}{0.7pt}}
-\setbeamersize{text margin left=8mm,text margin right=8mm}
+\setbeamersize{text margin left=9mm,text margin right=9mm}
+
+\setbeamertemplate{itemize item}{\color{indigo}\rule[0.35ex]{1.7mm}{0.8pt}}
+\setbeamertemplate{itemize subitem}{\color{gris}\rule[0.35ex]{1.2mm}{0.6pt}}
+\setbeamertemplate{section in toc}{\leavevmode\color{indigo}\rule[0.35ex]{1.7mm}{0.8pt}\ \color{encre}\inserttocsection\par}
+\setbeamerfont{section in toc}{size=\normalsize}
 
 % Bandeau de titre pleine largeur
 \setbeamercolor{frametitle}{bg=indigo,fg=white}
 \setbeamerfont{frametitle}{size=\large}
-\makeatletter
 \setbeamertemplate{frametitle}{%
   \nointerlineskip
-  \begin{beamercolorbox}[wd=\paperwidth,ht=3.1ex,dp=1.5ex,leftskip=8mm,rightskip=8mm]{frametitle}
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.6ex,leftskip=9mm,rightskip=9mm]{frametitle}
     \usebeamerfont{frametitle}\insertframetitle
   \end{beamercolorbox}%
-  \ifx\insertframesubtitle\@empty\else
-    \vskip2mm\hspace{8mm}\usebeamercolor[fg]{framesubtitle}\usebeamerfont{framesubtitle}\insertframesubtitle
-  \fi}
-\makeatother
+  \vskip3mm}
+
+% Blocs a en tete plein
+\setbeamercolor{block title}{bg=indigo,fg=white}
+\setbeamercolor{block body}{bg=grisbloc,fg=encre}
+\setbeamerfont{block title}{size=\normalsize,series=\mdseries}
+\setbeamertemplate{blocks}[default]
 
 % Pied de page a quatre cellules
-\setbeamercolor{cellule}{bg=indigofonce,fg=white}
-\setbeamercolor{cellulesombre}{bg=indigonuit,fg=white}
+\setbeamercolor{cellule}{bg=indigo,fg=white}
+\setbeamercolor{cellulesombre}{bg=indigofonce,fg=white}
 \newcommand{\pieddepage}{%
   \setbeamertemplate{footline}{%
     \hbox{%
-      \begin{beamercolorbox}[wd=.22\paperwidth,ht=2.4ex,dp=1.1ex,center]{cellulesombre}
-        \tiny\bfseries Groupe 9
+      \begin{beamercolorbox}[wd=.26\paperwidth,ht=2.5ex,dp=1.2ex,leftskip=9mm]{cellulesombre}
+        \scriptsize GROUPE 9
       \end{beamercolorbox}%
-      \begin{beamercolorbox}[wd=.48\paperwidth,ht=2.4ex,dp=1.1ex,center]{cellule}
-        \tiny\bfseries Analyse de données e commerce
+      \begin{beamercolorbox}[wd=.44\paperwidth,ht=2.5ex,dp=1.2ex,center]{cellule}
+        \scriptsize EcommerceAnalytics
       \end{beamercolorbox}%
-      \begin{beamercolorbox}[wd=.20\paperwidth,ht=2.4ex,dp=1.1ex,center]{cellulesombre}
-        \tiny\bfseries Septembre 2026
+      \begin{beamercolorbox}[wd=.20\paperwidth,ht=2.5ex,dp=1.2ex,center]{cellulesombre}
+        \scriptsize 2025-2026
       \end{beamercolorbox}%
-      \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.4ex,dp=1.1ex,center]{cellule}
-        \tiny\bfseries \insertframenumber\,/\,\inserttotalframenumber
+      \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.5ex,dp=1.2ex,center]{cellule}
+        \scriptsize \insertframenumber/\inserttotalframenumber
       \end{beamercolorbox}}%
     \vskip0pt}}
 \newcommand{\sanspied}{\setbeamertemplate{footline}{}}
@@ -76,16 +81,16 @@
 
 % ---------------------------------------------------------------- code
 \lstdefinestyle{scala}{
-  basicstyle=\ttfamily\scriptsize\color{white},
-  backgroundcolor=\color{indigonuit},
-  keywordstyle=\color{lavande},
-  stringstyle=\color{lavande},
-  commentstyle=\color{gris},
+  basicstyle=\ttfamily\scriptsize\color{encre},
+  backgroundcolor=\color{grisbloc},
+  keywordstyle=\color{indigo}\bfseries,
+  stringstyle=\color{vert},
+  commentstyle=\color{gris}\itshape,
   showstringspaces=false,
   breaklines=true,
   frame=none,
   xleftmargin=4mm, xrightmargin=2mm,
-  framexleftmargin=4mm,
+  framexleftmargin=4mm, framexrightmargin=2mm,
   aboveskip=2mm, belowskip=2mm,
   columns=fullflexible,
   keepspaces=true
@@ -93,316 +98,278 @@
 \lstset{style=scala}
 
 % ---------------------------------------------------------------- outils
-% Fond pleine page pour les diapositives de rupture
-\newcommand{\fondsombre}[1]{%
-  \setbeamertemplate{background}{%
-    \begin{tikzpicture}
-      \useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
-      \fill[indigonuit] (0,0) rectangle (\the\paperwidth,\the\paperheight);
-      #1
-    \end{tikzpicture}}}
-\newcommand{\fondclair}{\setbeamertemplate{background}{}}
+% Legende grise sous un element
+\newcommand{\legende}[1]{{\color{gris}\footnotesize #1}}
 
-% Encadre indigo nuit, message fort
-\newcommand{\encadre}[1]{%
-  \begin{tikzpicture}
-    \node[fill=indigonuit,text=white,rounded corners=2pt,inner sep=3.2mm,
-          text width=\dimexpr\textwidth-7.4mm\relax,align=left] {#1};
-  \end{tikzpicture}}
-
-% Encadre indigo nuit, contenu centre
-\newcommand{\encadrecentre}[1]{%
-  \begin{tikzpicture}
-    \node[fill=indigonuit,text=white,rounded corners=2pt,inner sep=3.2mm,
-          text width=\dimexpr\textwidth-7.4mm\relax,align=center] {#1};
-  \end{tikzpicture}}
-
-% Encadre lavande pale, precision
-\newcommand{\precision}[1]{%
-  \begin{tikzpicture}
-    \node[fill=lavandepale,text=encre,rounded corners=2pt,inner sep=2.8mm,
-          text width=\dimexpr\textwidth-6.6mm\relax,align=left] {#1};
-  \end{tikzpicture}}
-
-% Grand chiffre avec libelle
-\newcommand{\chiffre}[2]{%
-  \begin{minipage}[t]{0.31\textwidth}
-    {\color{indigonuit}\fontsize{19}{21}\selectfont\bfseries #1}\\[1mm]
-    {\color{indigo}\scriptsize\bfseries\MakeUppercase{#2}}
-  \end{minipage}}
-
-% Barre horizontale proportionnelle : \barre{fraction}{couleur}{etiquette}
-% La largeur en centimetres se regle avec \renewcommand{\lbarre}{...}
-\newcommand{\lbarre}{6}
+% Barre horizontale : \barre{fraction}{couleur}{etiquette}
+% Largeur en centimetres reglable par \renewcommand{\lbarre}{...}
+\newcommand{\lbarre}{5}
 \newcommand{\barre}[3]{%
   \begin{tikzpicture}[baseline=-0.7ex]
-    \fill[lavandepale,rounded corners=1pt] (0,0) rectangle (\lbarre,0.26);
-    \fill[#2,rounded corners=1pt] (0,0) rectangle ({#1*\lbarre},0.26);
+    \fill[grisbloc] (0,0) rectangle (\lbarre,0.26);
+    \fill[#2] (0,0) rectangle ({#1*\lbarre},0.26);
   \end{tikzpicture}\;{\scriptsize #3}}
 
 % ---------------------------------------------------------------- meta
 \title{Analyse de données e commerce}
-\author{ABOUTA Eudoxie \and BAMBA Issouf \and AHOGA Josias}
-\date{Septembre 2026}
+\author{Groupe 9}
+\date{2025-2026}
 
 \begin{document}
 
 % ================================================================ 1
-\fondsombre{
-  \fill[indigofonce] (0.60\paperwidth,0) rectangle (\the\paperwidth,\the\paperheight);
-  \fill[indigo,rounded corners=10pt]
-      (0.66\paperwidth,0.20\paperheight) rectangle (0.94\paperwidth,0.78\paperheight);
-  \fill[lavande] (0.80\paperwidth,0.53\paperheight) circle (1.5cm);
-  \node[text=indigonuit,font=\bfseries\large] at (0.80\paperwidth,0.555\paperheight) {124\,751};
-  \node[text=indigonuit,font=\tiny]           at (0.80\paperwidth,0.505\paperheight) {transactions analysées};
-  \node[text=lavande,font=\scriptsize]        at (0.80\paperwidth,0.115\paperheight)
-      {Spark 3.5.6 \quad Scala 2.12 \quad Java 17};
-}
 \sanspied
 \begin{frame}[plain]
-  \vspace{2mm}
-  {\color{lavande}\scriptsize\bfseries GROUPE 9}\\[5mm]
-  {\color{white}\fontsize{21}{25}\selectfont\bfseries ANALYSE DE DONNÉES}\\[1mm]
-  {\color{lavande}\fontsize{21}{25}\selectfont\bfseries E COMMERCE}\\[4mm]
-  {\color{lavande}\rule{2.8cm}{1.1pt}}\\[4mm]
-  \begin{minipage}{0.54\textwidth}
-    \color{lavandepale}\small\raggedright
-    Un pipeline Spark qui explique ses rejets, mesure la fidélité
-    et publie lui même son tableau de bord.
-  \end{minipage}\\[6mm]
-  {\color{white}\small\bfseries ABOUTA Eudoxie} {\color{lavande}\scriptsize Ingestion et plateforme}\\[1.2mm]
-  {\color{white}\small\bfseries BAMBA Issouf} {\color{lavande}\scriptsize Transformations}\\[1.2mm]
-  {\color{white}\small\bfseries AHOGA Josias} {\color{lavande}\scriptsize Analytique et performance}
-
-  \note{Collectif, 30 secondes. Se présenter, annoncer le plan : contexte,
-  données, architecture, un exposé par membre, puis la démonstration.
-  Préciser d'emblée que les données sont synthétiques et que la démonstration
-  se termine sur un tableau de bord généré par le pipeline lui même.}
-\end{frame}
-\fondclair\pieddepage
-
-% ================================================================ 2
-\begin{frame}{Le problème posé}
-  \framesubtitle{Quatre fichiers hétérogènes, volontairement sales, à transformer en décisions défendables}
-
   \vspace{3mm}
-  \begin{columns}[t,onlytextwidth]
-    \column{0.32\textwidth}
-      {\color{indigo}\bfseries\small Pas un problème de volume}\\[1mm]
-      {\small 138\,047 transactions tiennent sur un poste. Le vrai sujet est la confiance.}
-    \column{0.32\textwidth}
-      {\color{indigo}\bfseries\small Un chiffre faux coûte cher}\\[1mm]
-      {\small Un montant invalide fausse le chiffre d'affaires, la commission et le classement.}
-    \column{0.32\textwidth}
-      {\color{indigo}\bfseries\small Notre principe}\\[1mm]
-      {\small Aucune ligne ne disparaît en silence. Chaque rejet porte son motif.}
-  \end{columns}
+  \begin{center}
+  \begin{tikzpicture}
+    \node[fill=indigo,text=white,rounded corners=6pt,inner sep=5mm,
+          text width=\dimexpr\textwidth-12mm\relax,align=center]
+      {\Large Analyse de données e commerce\\[3mm]
+       \normalsize Un pipeline Spark qui explique ses rejets, mesure la fidélité\\
+       et publie lui même son tableau de bord};
+  \end{tikzpicture}
+
+  \vspace{14mm}
+  Projet final Data Engineer, Spark et Scala\\
+  Dakar Institute of Technology
 
   \vspace{6mm}
-  \chiffre{138\,047}{lignes lues}\hfill
-  \chiffre{13\,296}{lignes écartées}\hfill
-  \chiffre{124\,751}{transactions analysées}
+  {\bfseries ABOUTA EUDOXIE \quad BAMBA ISSOUF \quad AHOGA JOSIAS}
 
-  \vfill
-  \encadrecentre{\large\bfseries 138\,047 \; = \; 1\,890 \; + \; 11\,406 \; + \; 124\,751}
-  \vspace{1mm}
+  \vspace{6mm}
+  Année académique 2025-2026
+  \end{center}
 
-  \note{Collectif, 45 secondes. La qualité vient avant le chiffre d'affaires.
-  Annoncer l'égalité de réconciliation, elle sera détaillée en diapositive 7
-  avec les deux notions de rejet.}
+  \note{Collectif, 30 secondes. Se présenter, annoncer le plan. Préciser
+  d'emblée que les données sont synthétiques et que la démonstration se
+  termine sur un tableau de bord généré par le pipeline lui même.}
+\end{frame}
+\pieddepage
+
+% ================================================================ 2
+\begin{frame}{Plan}
+  \vspace{3mm}
+  \begin{center}
+  \begin{minipage}{0.80\textwidth}
+    \setlength{\parskip}{2.6mm}
+    \tableofcontents
+  \end{minipage}
+  \end{center}
+
+  \note{Collectif, 20 secondes. Annoncer les trois exposés individuels et la
+  démonstration finale. Ne pas commenter chaque section.}
 \end{frame}
 
+\section{Contexte et problématique}
+
 % ================================================================ 3
-\begin{frame}{Les quatre sources}
-  \framesubtitle{Un format différent par source : le pipeline doit typer, pas deviner}
+\begin{frame}{Contexte et problématique}
+  \begin{itemize}\itemsep3mm
+    \item Quatre fichiers de formats différents, volontairement sales, décrivent
+          la même activité commerciale.
+    \item 138\,047 transactions tiennent sur un poste de travail : la difficulté
+          n'est pas la taille, c'est la fiabilité de ce qu'on en tire.
+    \item Un montant invalide fausse le chiffre d'affaires, la commission du
+          marchand et son classement.
+  \end{itemize}
 
   \vspace{4mm}
+  \begin{block}{Traçabilité}
+    Chaque ligne écartée porte son motif. Tout chiffre présenté se remonte
+    jusqu'à sa ligne source.
+  \end{block}
+
+  \note{Collectif, 45 secondes. La qualité vient avant le chiffre d'affaires.
+  Annoncer que l'égalité de réconciliation sera montrée en détail par Eudoxie.}
+\end{frame}
+
+% ================================================================ 4
+\begin{frame}{Les quatre sources}
+  \vspace{1mm}
   \begin{center}
   \small
-  \begin{tabular}{@{}l r l p{5.4cm}@{}}
+  \begin{tabular}{@{}l r l p{5.6cm}@{}}
     \toprule
     \textbf{Fichier} & \textbf{Lignes} & \textbf{Format} & \textbf{Stratégie de lecture} \\
     \midrule
-    \texttt{transactions.csv}   & 138\,047 & CSV     & Schéma explicite, mode \texttt{FAILFAST} \\
-    \texttt{users.json}         &  12\,000 & JSON    & Schéma typé, champ tableau imbriqué \\
-    \texttt{products.parquet}   &   6\,000 & Parquet & Répertoire de douze fichiers, schéma porté \\
-    \texttt{merchants.csv}      &     600  & CSV     & Inférence, puis conversions explicites \\
+    \texttt{transactions.csv} & 138\,047 & CSV     & Schéma explicite, mode \texttt{FAILFAST} \\
+    \texttt{users.json}       &  12\,000 & JSON    & Schéma typé, champ tableau imbriqué \\
+    \texttt{products.parquet} &   6\,000 & Parquet & Répertoire de douze fichiers \\
+    \texttt{merchants.csv}    &     600  & CSV     & Inférence, puis conversions explicites \\
     \bottomrule
   \end{tabular}
   \end{center}
 
-  \vfill
-  \encadre{Tous les chemins proviennent de \texttt{application.conf}. Aucun chemin,
-  aucun seuil et aucun paramètre Spark n'est codé en dur.}
-  \vspace{1mm}
+  \vspace{5mm}
+  \begin{block}{Configuration externalisée}
+    Chemins, seuils et paramètres Spark proviennent de
+    \texttt{application.conf}. Aucune valeur codée en dur.
+  \end{block}
 
   \note{Collectif, 60 secondes. Chaque format impose une stratégie de lecture
-  différente. Si le jury demande pourquoi les données sont hors du JAR : pour
-  rester remplaçables et accessibles aux exécuteurs sur un cluster.}
+  différente. Si le jury demande pourquoi les données restent hors du JAR :
+  pour être remplaçables et accessibles aux exécuteurs sur un cluster.}
 \end{frame}
 
-% ================================================================ 4
-\begin{frame}{Architecture en médaillon}
-  \framesubtitle{Trois couches, trois propriétaires, un contrat de données à chaque frontière}
+\section{Architecture et organisation}
 
-  \vspace{3mm}
+% ================================================================ 5
+\begin{frame}{Architecture en médaillon}
+  \vspace{1mm}
   \begin{columns}[t,onlytextwidth]
-    \column{0.31\textwidth}
-      {\color{indigo}\scriptsize\bfseries BRONZE}\\[1mm]
-      {\bfseries\small Données brutes}\\[2mm]
-      {\scriptsize
-       Lecture multi format\\
-       Schéma explicite et typage\\
-       \texttt{FAILFAST} sur l'illisible}\\[3mm]
-      {\color{indigo}\tiny\ttfamily DataIngestion.scala}\\
-      {\color{gris}\tiny ABOUTA Eudoxie}
-    \column{0.31\textwidth}
-      {\color{indigo}\scriptsize\bfseries SILVER}\\[1mm]
-      {\bfseries\small Validées et enrichies}\\[2mm]
-      {\scriptsize
-       Rejets conservés et motivés\\
-       Jointures expliquées\\
-       Fenêtres et UDF temporelle}\\[3mm]
-      {\color{indigo}\tiny\ttfamily DataValidation, TimeFeatures}\\
-      {\color{gris}\tiny ABOUTA Eudoxie et BAMBA Issouf}
-    \column{0.31\textwidth}
-      {\color{indigo}\scriptsize\bfseries GOLD}\\[1mm]
-      {\bfseries\small Rapports métier}\\[2mm]
-      {\scriptsize
-       Quatorze rapports CSV et Parquet\\
-       Tableau de bord HTML autonome\\
-       Durées par étape}\\[3mm]
-      {\color{indigo}\tiny\ttfamily Analytics, DashboardReport}\\
-      {\color{gris}\tiny AHOGA Josias}
+    \column{0.315\textwidth}
+      \begin{block}{Bronze}
+        \footnotesize
+        Lecture multi format\\
+        Schéma explicite et typage\\
+        \texttt{FAILFAST} sur l'illisible\\[2mm]
+        \legende{DataIngestion}
+      \end{block}
+    \column{0.315\textwidth}
+      \begin{block}{Silver}
+        \footnotesize
+        Rejets conservés et motivés\\
+        Jointures expliquées\\
+        Fenêtres et UDF temporelle\\[2mm]
+        \legende{DataValidation, TimeFeatures}
+      \end{block}
+    \column{0.315\textwidth}
+      \begin{block}{Gold}
+        \footnotesize
+        Quatorze rapports métier\\
+        Tableau de bord HTML\\
+        Durées par étape\\[2mm]
+        \legende{Analytics, DashboardReport}
+      \end{block}
   \end{columns}
 
-  \vfill
-  \precision{\footnotesize\textbf{Socle transverse} \quad \texttt{application.conf}
-  \; \textbullet\; cache et broadcast
-  \; \textbullet\; \texttt{MainApp} : orchestration et chronométrage
-  \; \textbullet\; conteneur et CI}
-  \vspace{1mm}
+  \vspace{6mm}
+  \begin{block}{Socle transverse}
+    \texttt{application.conf}, cache et diffusion, \texttt{MainApp} pour
+    l'orchestration et le chronométrage, conteneur et intégration continue.
+  \end{block}
 
   \note{Collectif, 75 secondes. Le vocabulaire Bronze Silver Gold rend le
   lignage lisible sans expliquer Spark. Montrer MainApp : la session est créée
-  une seule fois, et finally libère le cache puis arrête Spark même en cas
+  une seule fois, et le finally libère le cache puis arrête Spark même en cas
   d'échec.}
 \end{frame}
 
-% ================================================================ 5
-\begin{frame}{Comment nous avons travaillé}
-  \framesubtitle{Trois rôles exclusifs, des fichiers séparés, une relecture croisée obligatoire}
-
-  \vspace{5mm}
+% ================================================================ 6
+\begin{frame}{Organisation de l'équipe}
+  \vspace{1mm}
   \begin{center}
   \small
   \begin{tabular}{@{}l l l l@{}}
     \toprule
     \textbf{Membre} & \textbf{Rôle} & \textbf{Parties} & \textbf{Relu par} \\
     \midrule
-    ABOUTA Eudoxie & Ingestion et plateforme     & 1, 2 et 7 & Issouf et Josias \\
-    BAMBA Issouf   & Transformations             & 3         & Eudoxie \\
-    AHOGA Josias   & Analytique et performance   & 4, 5 et 6 & Issouf et Eudoxie \\
+    ABOUTA Eudoxie & Ingestion et plateforme   & 1, 2 et 7 & Issouf et Josias \\
+    BAMBA Issouf   & Transformations           & 3         & Eudoxie \\
+    AHOGA Josias   & Analytique et performance & 4, 5 et 6 & Issouf et Eudoxie \\
     \bottomrule
   \end{tabular}
   \end{center}
 
-  \vspace{7mm}
+  \vspace{5mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Séparation par fichier}\\[1mm]
-      {\small La structure imposée attribue un fichier à un seul propriétaire.
-      Trois personnes travaillent en parallèle sans conflit Git.}
+      \begin{block}{Séparation par fichier}
+        \footnotesize Chaque fichier a un propriétaire unique.
+      \end{block}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small La relecture laisse une trace}\\[1mm]
-      {\small Chaque module est relu par quelqu'un d'autre que son auteur.
-      Date, relecteur et remarques sont dans \texttt{CONTRIBUTIONS.md}.}
+      \begin{block}{Relecture tracée}
+        \footnotesize Chaque module est relu par un autre membre.
+        Date, relecteur et remarques sont consignés.
+      \end{block}
   \end{columns}
 
-  \note{Collectif, 90 secondes. Expliquer les interfaces qui font tenir
-  l'ensemble : Sources, ValidationResult et Enrichment. Ce sont ces trois types
-  qui permettent à chacun de travailler sans casser le module du voisin.}
+  \note{Collectif, 90 secondes. Expliquer les trois interfaces qui font tenir
+  l'ensemble : Sources, ValidationResult et Enrichment. Ce sont elles qui
+  permettent à chacun de travailler sans casser le module du voisin.}
 \end{frame}
 
-% ================================================================ 6
-\begin{frame}[fragile]{Ingestion et typage}
-  \framesubtitle{ABOUTA Eudoxie \quad Membre A}
+\section{Ingestion et qualité des données}
 
-  \vspace{3mm}
+% ================================================================ 7
+\begin{frame}[fragile]{Ingestion et typage}
+  \legende{ABOUTA Eudoxie}
+
+  \vspace{2mm}
 \begin{lstlisting}
 def transactions(): Dataset[Transaction] = read("transactions") {
   spark.read.option("header", true).option("mode", "FAILFAST")
     .schema(Encoders.product[Transaction].schema)
     .csv(path("transactions")).as[Transaction]
 }
-
-case class Transaction(transaction_id: String, ...,
-  amount: Option[Double], timestamp: String, ...)
 \end{lstlisting}
 
-  \vspace{4mm}
+  \vspace{3mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Option, et non zéro}\\[1mm]
-      {\small Un montant absent reste nul jusqu'à la validation. Le remplacer
-      par zéro rendrait le rejet inexplicable.}
+      \begin{block}{Montant absent}
+        \footnotesize Il reste nul jusqu'à la validation, il n'est jamais
+        remplacé par zéro.
+      \end{block}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small \texttt{count} déclenche la lecture}\\[1mm]
-      {\small Spark est paresseux : sans action, une erreur de fichier
-      remonterait au milieu du pipeline.}
+      \begin{block}{Lecture immédiate}
+        \footnotesize Une action \texttt{count} force la lecture dès
+        l'ingestion.
+      \end{block}
   \end{columns}
 
-  \note{Eudoxie, 2 minutes 30. Montrer read, le try catch et le message
-  d'erreur contextualisé. Expliquer pourquoi users.json est lu avec un schéma
-  typé plutôt qu'en inférence : le champ preferred\_categories est un tableau,
-  l'inférence sur un fichier partiel donnerait un type instable.}
+  \note{Eudoxie, 2 minutes 30. Montrer read, le try catch et le message d'erreur
+  contextualisé. Expliquer pourquoi users.json est lu avec un schéma typé et non
+  en inférence : le champ preferred categories est un tableau, l'inférence sur
+  un fichier partiel donnerait un type instable.}
 \end{frame}
 
-% ================================================================ 7
+% ================================================================ 8
 \begin{frame}{Validation et rapport de qualité}
-  \framesubtitle{ABOUTA Eudoxie \quad Membre A}
-  \renewcommand{\lbarre}{3.4}
+  \legende{ABOUTA Eudoxie}
+  \renewcommand{\lbarre}{3.2}
 
-  \vspace{1mm}
+  \vspace{2mm}
   \begin{columns}[t,onlytextwidth]
-    \column{0.52\textwidth}
-      {\color{indigo}\scriptsize\bfseries L'ENTONNOIR}\\[3mm]
-      \barre{1.00}{indigo}{Lues \quad 138\,047}\\[2mm]
-      \barre{0.986}{indigofonce}{Valides \quad 136\,157}\\[2mm]
-      \barre{0.904}{lavande}{Analysées \quad 124\,751}
-    \column{0.44\textwidth}
-      {\color{indigo}\scriptsize\bfseries REJETS PAR JEU}\\[2mm]
-      \scriptsize
+    \column{0.50\textwidth}
+      \vspace{2mm}
+      \barre{1.000}{vert}{Lues \quad 138\,047}\\[2.5mm]
+      \barre{0.986}{indigo}{Valides \quad 136\,157}\\[2.5mm]
+      \barre{0.904}{ambre}{Analysées \quad 124\,751}\\[4mm]
+      \legende{Orphelines : 400 utilisateurs,\\300 produits, 250 marchands.}
+    \column{0.46\textwidth}
+      \small
       \begin{tabular}{@{}l r r@{}}
         \toprule
-        Jeu & Rejets & Taux \\
+        \textbf{Jeu} & \textbf{Rejets} & \textbf{Taux} \\
         \midrule
         transactions & 1\,890 & 1,37 \% \\
         users        &   345  & 2,88 \% \\
         products     &   179  & 2,98 \% \\
         merchants    &    14  & 2,33 \% \\
         \bottomrule
-      \end{tabular}\\[3mm]
-      {\color{gris}\scriptsize Références orphelines : 400 utilisateurs,
-      300 produits, 250 marchands.}
+      \end{tabular}
   \end{columns}
 
-  \vfill
-  \encadre{\small\textbf{L'égalité que nous savons défendre}\\[1.2mm]
-  138\,047 = 1\,890 rejets + 11\,406 références non enrichissables + 124\,751 analysées}
-  \vspace{1mm}
+  \vspace{3mm}
+  \begin{block}{Réconciliation des volumes}
+    138\,047 = 1\,890 rejets + 11\,406 références non enrichissables + 124\,751 analysées.
+  \end{block}
 
   \note{Eudoxie, 2 minutes 30. Ouvrir un CSV de rejets et commenter une ligne
-  réelle. Les compteurs d'orphelins peuvent se recouper : une même transaction
-  peut pointer vers un utilisateur absent et un produit absent, elle est
+  réelle. Les compteurs d'orphelins peuvent se recouper : une transaction peut
+  pointer à la fois vers un utilisateur absent et un produit absent, elle est
   comptée dans les deux.}
 \end{frame}
 
-% ================================================================ 8
-\begin{frame}[fragile]{L'UDF extractTimeFeatures}
-  \framesubtitle{BAMBA Issouf \quad Membre B}
+\section{Transformations et enrichissement}
 
-  \vspace{1mm}
+% ================================================================ 9
+\begin{frame}[fragile]{L'UDF extractTimeFeatures}
+  \legende{BAMBA Issouf}
+
+  \vspace{2mm}
 \begin{lstlisting}
 udf((value: String) => features(value, settings).orNull)
 
@@ -413,64 +380,54 @@ def dayPeriod(hour: Int, s: TimeSettings): String =
   else                                               "Evening"
 \end{lstlisting}
 
-  \vspace{2mm}
+  \vspace{3mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Robuste par construction}\\[1mm]
-      {\small Une chaîne nulle, vide ou mal formée renvoie \texttt{null}.
-      Le 29 février 2025 est rejeté, pas décalé.}
+      \begin{block}{Robustesse}
+        \footnotesize Une chaîne nulle, vide ou mal formée renvoie \texttt{null}.
+        Le 29 février 2025 est rejeté.
+      \end{block}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Conventions assumées}\\[1mm]
-      {\small Le sujet ne dit rien de minuit à six heures : nous classons en
-      \texttt{Night}. L'heure 17 reste ouvrée.}
+      \begin{block}{Découpage horaire}
+        \footnotesize Morning 06h à 11h59, Afternoon 12h à 17h59, Evening 18h à
+        21h59, Night 22h à 05h59.
+      \end{block}
   \end{columns}
-
-  \vfill
-  \precision{\small \textbf{Morning} 06h00 à 11h59 \quad\textbullet\quad
-  \textbf{Afternoon} 12h00 à 17h59 \quad\textbullet\quad
-  \textbf{Evening} 18h00 à 21h59 \quad\textbullet\quad
-  \textbf{Night} 22h00 à 05h59}
-  \vspace{1mm}
 
   \note{Issouf, 1 minute 30. Insister sur orNull : l'UDF retourne une structure
   ou null, elle ne lève jamais d'exception. Montrer le test qui vérifie les
   frontières à 21h59, 22h00 et minuit.}
 \end{frame}
 
-% ================================================================ 9
+% ================================================================ 10
 \begin{frame}[fragile]{Enrichissement et fenêtrage}
-  \framesubtitle{BAMBA Issouf \quad Membre B}
+  \legende{BAMBA Issouf}
 
-  \vspace{3mm}
+  \vspace{2mm}
 \begin{lstlisting}
 val glissante = Window.partitionBy("user_id").orderBy("epoch_seconds")
                       .rangeBetween(-7 * 86400L + 1L, 0L)
 
-size(collect_set(col("transaction_date")).over(glissante))  // jours actifs
+size(collect_set(col("transaction_date")).over(glissante))
 \end{lstlisting}
 
-  \vspace{4mm}
+  \vspace{3mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small \texttt{rangeBetween}, pas \texttt{rowsBetween}}\\[1mm]
-      {\small La borne est en secondes. Trois achats dans la journée ne font
-      pas sortir les autres de la fenêtre.}
+      \small
+      \begin{tabular}{@{}l@{}}
+        \texttt{transaction\_rank} \\
+        \texttt{rolling\_amount\_7d} \\
+        \texttt{active\_days\_7d} \\
+        \texttt{days\_since\_previous} \\
+        \texttt{age\_group} \\
+      \end{tabular}\\[2mm]
+      \legende{Colonnes ajoutées à chaque transaction.}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Jours distincts}\\[1mm]
-      {\small \texttt{collect\_set} élimine les doublons de date : deux achats
-      le même jour comptent pour un.}
+      \begin{block}{Fenêtre en secondes}
+        \footnotesize La borne est en secondes, pas en nombre de lignes.
+      \end{block}
   \end{columns}
-
-  \vspace{3mm}
-  {\color{indigo}\scriptsize\bfseries CE QUE LA TRANSACTION ENRICHIE GAGNE}\\[2mm]
-  \scriptsize
-  \begin{tabular}{@{}l l@{}}
-    \texttt{transaction\_rank}       & Rang de l'achat chez ce client \\
-    \texttt{rolling\_amount\_7d}     & Montant cumulé sur sept jours \\
-    \texttt{active\_days\_7d}        & Jours d'achat distincts, et \texttt{is\_active} \\
-    \texttt{days\_since\_previous}   & Délai depuis l'achat précédent, avec \texttt{lag} \\
-    \texttt{age\_group}              & Jeune, Adulte, Âge Moyen, Senior \\
-  \end{tabular}
 
   \note{Issouf, 2 minutes. Si le jury demande pourquoi les jointures sont en
   left : parce qu'une référence manquante doit être expliquée avant d'être
@@ -478,333 +435,302 @@ size(collect_set(col("transaction_date")).over(glissante))  // jours actifs
   qu'aucune ligne n'est dupliquée ni perdue.}
 \end{frame}
 
-% ================================================================ 10
+% ================================================================ 11
 \begin{frame}{Détection de transactions suspectes}
-  \framesubtitle{BAMBA Issouf \quad Membre B}
+  \legende{BAMBA Issouf}
 
-  \vspace{4mm}
+  \vspace{3mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small 01 \quad Montant hors norme}\\
-      {\small Plus de 300 \% au dessus du panier moyen historique du client.}\\[3mm]
-      {\color{indigo}\bfseries\small 02 \quad Achat nocturne}\\
-      {\small La transaction tombe entre 22h00 et 05h59.}
+      \begin{itemize}\itemsep2.5mm
+        \item Montant supérieur de 300 \% au panier moyen historique du client
+        \item Achat entre 22h00 et 05h59
+      \end{itemize}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small 03 \quad Rafale}\\
-      {\small Moins de cinq minutes depuis l'achat précédent du même client.}\\[3mm]
-      {\color{indigo}\bfseries\small 04 \quad Paiement en crypto}\\
-      {\small Le moyen de paiement déclaré est \texttt{CRYPTO}.}
+      \begin{itemize}\itemsep2.5mm
+        \item Moins de cinq minutes depuis l'achat précédent
+        \item Moyen de paiement déclaré en \texttt{CRYPTO}
+      \end{itemize}
   \end{columns}
 
-  \vspace{8mm}
-  \chiffre{3\,760}{transactions signalées}\hfill
-  \chiffre{$\geq$ 2}{signaux exigés}\hfill
-  \chiffre{0}{accusation}
+  \vspace{6mm}
+  \begin{block}{Chiffre clé}
+    3\,760 transactions signalées, soit 3,01 \% du périmètre, avec au moins
+    deux signaux sur quatre.
+  \end{block}
 
-  \vspace{5mm}
-  {\color{gris}\footnotesize Soit 3,01 \% du périmètre. Le seuil est un paramètre
-  de configuration. Un signal n'est pas une preuve : le résultat oriente un
-  contrôle humain.}
-
-  \note{Issouf, 1 minute 30. Point clé : la moyenne historique n'utilise que
-  les achats strictement antérieurs, sans anticipation. Sans historique, le
-  premier critère ne s'active pas, mais les trois autres peuvent suffire.
-  La règle est pédagogique, pas un modèle de fraude validé.}
+  \note{Issouf, 1 minute 30. Point clé : la moyenne historique n'utilise que les
+  achats strictement antérieurs, sans anticipation. Sans historique, le premier
+  critère ne s'active pas, mais les trois autres peuvent suffire. La règle est
+  pédagogique, ce n'est pas un modèle de fraude validé.}
 \end{frame}
 
-% ================================================================ 11
+\section{Analytique métier et performance}
+
+% ================================================================ 12
 \begin{frame}{Performance par marchand}
-  \framesubtitle{AHOGA Josias \quad Membre C}
+  \legende{AHOGA Josias}
   \renewcommand{\lbarre}{6}
 
   \vspace{4mm}
-  {\color{indigo}\scriptsize\bfseries TROIS PREMIERS MARCHANDS, CHIFFRE D'AFFAIRES}\\[2mm]
-  \barre{1.00}{indigo}{TechStore 225 \quad 568\,073 EUR}\\[2mm]
-  \barre{0.919}{indigofonce}{ElectroWorld 559 \quad 522\,206 EUR}\\[2mm]
-  \barre{0.824}{lavande}{TechStore 112 \quad 468\,136 EUR}
+  \barre{1.000}{vert}{TechStore 225 \quad 568\,073 EUR}\\[2.5mm]
+  \barre{0.919}{indigo}{ElectroWorld 559 \quad 522\,206 EUR}\\[2.5mm]
+  \barre{0.824}{ambre}{TechStore 112 \quad 468\,136 EUR}
 
-  \vspace{5mm}
+  \vspace{6mm}
   \begin{columns}[t,onlytextwidth]
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Deux classements, pas un}\\[1mm]
-      {\small \texttt{dense\_rank} par catégorie et par région. Un marchand
-      peut dominer sa région sans dominer sa catégorie.}
+      \begin{block}{Classements}
+        \footnotesize \texttt{dense\_rank} par catégorie et par région.
+      \end{block}
     \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Commission par ligne}\\[1mm]
-      {\small Montant multiplié par le taux du marchand, puis agrégé et arrondi
-      au centime.}
+      \begin{block}{Commission par ligne}
+        \footnotesize Montant multiplié par le taux du marchand.
+        TechStore 225 : 42\,889,54 EUR.
+      \end{block}
   \end{columns}
 
-  \vfill
-  \precision{\footnotesize \textbf{TechStore 225} \quad 366 transactions
-  \quad\textbullet\quad 337 clients uniques \quad\textbullet\quad commission 42\,889,54 EUR}
-  \vspace{1mm}
-
-  \note{Josias, 1 minute 30. Expliquer pourquoi le merchant\_id de la
-  transaction fait foi pour le chiffre d'affaires, et non celui du catalogue
-  produit : 512 divergences sont signalées par catalog\_merchant\_mismatch
-  plutôt que corrigées en silence.}
-\end{frame}
-
-% ================================================================ 12
-\begin{frame}{Cohortes et rétention}
-  \framesubtitle{AHOGA Josias \quad Membre C}
-  \renewcommand{\lbarre}{3.2}
-
-  \vspace{2mm}
-  \begin{columns}[t,onlytextwidth]
-    \column{0.52\textwidth}
-      {\color{indigo}\scriptsize\bfseries PROFIL DE LA MEILLEURE COHORTE}\\[3mm]
-      \barre{1.000}{indigo}{M+0 \quad 100,0 \%}\\[2mm]
-      \barre{0.613}{indigofonce}{M+1 \quad 61,3 \%}\\[2mm]
-      \barre{0.487}{indigofonce}{M+2 \quad 48,7 \%}\\[2mm]
-      \barre{0.381}{lavande}{M+3 \quad 38,1 \%}\\[2mm]
-      \barre{0.302}{lavande}{M+5 \quad 30,2 \%}
-    \column{0.44\textwidth}
-      {\color{indigo}\bfseries\small Un mois de naissance}\\[1mm]
-      {\footnotesize Chaque client appartient au mois de son premier achat.
-      M+0 vaut donc toujours cent pour cent.}\\[4mm]
-      {\color{indigo}\bfseries\small Le piège évité}\\[1mm]
-      {\footnotesize Une cohorte de novembre 2025 n'a pas de M+3 observable.
-      La compter comme un échec fausserait le classement.}
-  \end{columns}
-
-  \vfill
-  \encadre{\small\textbf{Meilleure rétention à trois mois} \quad Cohorte de juin 2025 :
-  118 clients encore actifs sur 310, soit \textbf{38,06 \%}}
-  \vspace{1mm}
-
-  \note{Josias, 1 minute 30. Expliquer la grille : on génère explicitement les
-  couples cohorte et mois observable, puis on joint l'activité en left, et un
-  mois sans achat vaut zéro. Sans cette grille, un mois creux disparaîtrait au
-  lieu de valoir zéro, et la courbe serait fausse.}
+  \note{Josias, 1 minute 30. Expliquer pourquoi le merchant id de la transaction
+  fait foi pour le chiffre d'affaires, et non celui du catalogue produit :
+  512 divergences sont signalées plutôt que corrigées en silence.}
 \end{frame}
 
 % ================================================================ 13
-\begin{frame}{Segmentation RFM}
-  \framesubtitle{AHOGA Josias \quad Membre C}
+\begin{frame}{Cohortes et rétention}
+  \legende{AHOGA Josias}
+  \renewcommand{\lbarre}{3.4}
+
+  \vspace{3mm}
+  \begin{columns}[t,onlytextwidth]
+    \column{0.50\textwidth}
+      \barre{1.000}{vert}{M+0 \quad 100,0 \%}\\[2mm]
+      \barre{0.613}{vert}{M+1 \quad \phantom{0}61,3 \%}\\[2mm]
+      \barre{0.487}{ambre}{M+2 \quad \phantom{0}48,7 \%}\\[2mm]
+      \barre{0.381}{ambre}{M+3 \quad \phantom{0}38,1 \%}\\[2mm]
+      \barre{0.302}{rouge}{M+5 \quad \phantom{0}30,2 \%}
+    \column{0.46\textwidth}
+      \begin{block}{Horizons non observables}
+        \footnotesize Une cohorte de novembre 2025 n'a pas de M+3 observable.
+        Ces horizons sont exclus du classement.
+      \end{block}
+  \end{columns}
 
   \vspace{5mm}
+  \begin{block}{Meilleure rétention à trois mois}
+    Cohorte de juin 2025 : 118 clients encore actifs sur 310, soit 38,06 \%.
+  \end{block}
+
+  \note{Josias, 1 minute 30. Expliquer la grille : on génère explicitement les
+  couples cohorte et mois observable, on joint l'activité en left, et un mois
+  sans achat vaut zéro. Sans cette grille, un mois creux disparaîtrait au lieu
+  de valoir zéro, et la courbe serait fausse.}
+\end{frame}
+
+% ================================================================ 14
+\begin{frame}{Segmentation RFM}
+  \legende{AHOGA Josias}
+
+  \vspace{3mm}
   \begin{center}
   \small
   \begin{tabular}{@{}l r r r r@{}}
     \toprule
     \textbf{Segment calculé} & \textbf{VIP} & \textbf{Premium} & \textbf{Standard} & \textbf{Budget} \\
     \midrule
-    Champions       & \textbf{451} &  613 &  272 &    32 \\
-    Clients fidèles &  266 &  854 & 1\,305 &   816 \\
-    À risque        &  287 &  726 &  866 &   317 \\
-    Nouveaux        &   18 &  146 &  618 &   724 \\
-    Perdus          &    2 &   67 &  653 & \textbf{1\,160} \\
+    Champions       & \textcolor{vert}{\textbf{451}} & 613 & 272 & 32 \\
+    Clients fidèles & 266 & 854 & 1\,305 & 816 \\
+    À risque        & 287 & 726 & 866 & 317 \\
+    Nouveaux        &  18 & 146 & 618 & 724 \\
+    Perdus          &   2 &  67 & 653 & \textcolor{rouge}{\textbf{1\,160}} \\
     \bottomrule
   \end{tabular}
   \end{center}
 
-  \vspace{7mm}
-  \begin{columns}[t,onlytextwidth]
-    \column{0.31\textwidth}
-      {\color{indigo}\bfseries\small Scores par quintiles}\\[1mm]
-      {\footnotesize \texttt{ntile(5)} sur récence, fréquence et montant.
-      Égalités départagées par identifiant.}
-    \column{0.31\textwidth}
-      {\color{indigo}\bfseries\small Le vrai résultat}\\[1mm]
-      {\footnotesize 451 Champions déclarés VIP, 1\,160 Perdus déclarés Budget :
-      le comportement valide la segmentation.}
-    \column{0.31\textwidth}
-      {\color{indigo}\bfseries\small Les exceptions}\\[1mm]
-      {\footnotesize 32 Budget se comportent en Champions, 2 VIP sont perdus.
-      À traiter en premier.}
-  \end{columns}
+  \vspace{4mm}
+  \begin{block}{Lecture de la matrice}
+    451 Champions déclarés VIP, 1\,160 Perdus déclarés Budget.
+    32 Budget se comportent en Champions, 2 VIP sont perdus.
+  \end{block}
 
-  \note{Josias, 1 minute 30. Les règles de segmentation sont les nôtres et sont
-  documentées dans CONTRIBUTIONS.md, dans leur ordre d'application. Assumer que
-  Clients fidèles est une classe résiduelle.}
-\end{frame}
-
-% ================================================================ 14
-\begin{frame}{Optimisations et mesure}
-  \framesubtitle{AHOGA Josias \quad Membre C}
-  \renewcommand{\lbarre}{3.2}
-
-  \vspace{1mm}
-  \begin{columns}[t,onlytextwidth]
-    \column{0.47\textwidth}
-      {\color{indigo}\scriptsize\bfseries CE QUE NOUS AVONS ACTIVÉ}\\[2mm]
-      {\footnotesize
-      \begin{itemize}\itemsep2pt
-        \item \texttt{cache} sur les résultats réutilisés
-        \item \texttt{persist(MEMORY\_AND\_DISK\_SER)} sur les transactions enrichies
-        \item \texttt{broadcast} des trois référentiels
-        \item exécution adaptative sur la session
-        \item \texttt{unpersist} dans un \texttt{finally}
-      \end{itemize}}
-    \column{0.47\textwidth}
-      {\color{indigo}\scriptsize\bfseries QUATRE EXÉCUTIONS DU MÊME CODE}\\[3mm]
-      \barre{0.730}{lavande}{\phantom{0}95,9 s}\\[2mm]
-      \barre{0.822}{indigofonce}{108,0 s}\\[2mm]
-      \barre{0.936}{indigofonce}{122,9 s}\\[2mm]
-      \barre{1.000}{indigo}{131,3 s}\\[3mm]
-      {\color{gris}\scriptsize 37 \% d'écart, sur la même machine, le même jour.}
-  \end{columns}
-
-  \vfill
-  \encadre{\small\textbf{L'honnêteté de la mesure}\\[1.2mm]
-  {\footnotesize\color{lavande} En dessous de 30 \% d'écart, sur ce matériel,
-  une différence ne prouve rien.}}
-  \vspace{1mm}
-
-  \note{Josias, 2 minutes. C'est la diapositive où l'on gagne des points en
-  étant honnête. Nous montrons la mesure telle qu'elle est, pas telle qu'elle
-  arrange. Si le jury demande le gain du benchmark : 84,84 pour cent sur le
-  total, mais avec la réserve ci dessus.}
+  \note{Josias, 1 minute 30. Scores par quintiles avec ntile(5), récence
+  ordonnée à l'envers, égalités départagées par identifiant pour être
+  reproductible. Assumer que Clients fidèles est une classe résiduelle.}
 \end{frame}
 
 % ================================================================ 15
-\fondsombre{
-  \fill[indigofonce,rounded corners=8pt]
-      (0.575\paperwidth,0.10\paperheight) rectangle (0.955\paperwidth,0.88\paperheight);
-  \node[anchor=north west,text=white,align=left] at (0.615\paperwidth,0.795\paperheight)
-      {\bfseries\large 124\,751\\[1.2mm] {\color{lavande}\tiny TRANSACTIONS ANALYSÉES}\\[5.5mm]
-       \bfseries\large 49,90 M EUR\\[1.2mm] {\color{lavande}\tiny CHIFFRE D'AFFAIRES}\\[5.5mm]
-       \bfseries\large 10\,193\\[1.2mm] {\color{lavande}\tiny CLIENTS UNIQUES}\\[5.5mm]
-       \bfseries\large 399,98 EUR\\[1.2mm] {\color{lavande}\tiny PANIER MOYEN}\\[5.5mm]
-       \bfseries\large 3,01 \%\\[1.2mm] {\color{lavande}\tiny SIGNALÉES}};
-}
-\sanspied
-\begin{frame}[fragile,plain]
-  \vspace{2mm}
-  {\color{lavande}\scriptsize\bfseries DÉMONSTRATION}\\[4mm]
-  \begin{minipage}{0.52\textwidth}
-    \raggedright
-    {\color{white}\fontsize{18}{22}\selectfont\bfseries Le pipeline publie\\son propre\\tableau de bord}\\[6mm]
-    {\color{lavandepale}\small
-    Une seule commande produit les quatorze rapports et une page HTML
-    autonome, en thème clair et en thème sombre.}
-  \end{minipage}
+\begin{frame}{Optimisations et mesure}
+  \legende{AHOGA Josias}
+  \renewcommand{\lbarre}{3}
 
-  \vspace{6mm}
-  \begin{minipage}{0.53\textwidth}
+  \vspace{3mm}
+  \begin{columns}[t,onlytextwidth]
+    \column{0.50\textwidth}
+      \footnotesize
+      \begin{itemize}\itemsep1.6mm
+        \item \texttt{cache} sur les résultats réutilisés
+        \item \texttt{persist} sur les transactions enrichies
+        \item \texttt{broadcast} des trois référentiels
+        \item exécution adaptative sur la session
+        \item \texttt{unpersist} dans un \texttt{finally}
+      \end{itemize}
+    \column{0.46\textwidth}
+      \barre{0.730}{vert}{\phantom{0}95,9 s}\\[2mm]
+      \barre{0.822}{vert}{108,0 s}\\[2mm]
+      \barre{0.936}{ambre}{122,9 s}\\[2mm]
+      \barre{1.000}{rouge}{131,3 s}\\[3mm]
+      \legende{Quatre exécutions du même code,\\même machine, même journée.}
+  \end{columns}
+
+  \vspace{4mm}
+  \begin{block}{Variabilité mesurée}
+    37 \% d'écart entre la plus rapide et la plus lente.
+  \end{block}
+
+  \note{Josias, 2 minutes. C'est la diapositive où l'on gagne des points en
+  étant honnête. Un seul passage par mode ne sépare pas le cache de
+  l'échauffement de la JVM. Une étape est même plus lente avec les
+  optimisations, et nous conservons ce chiffre.}
+\end{frame}
+
+\section{Démonstration et industrialisation}
+
+% ================================================================ 16
+\begin{frame}[fragile]{Démonstration}
+  \vspace{2mm}
 \begin{lstlisting}
-spark-submit
-  --master 'local[2]' --driver-memory 3g
+spark-submit --master 'local[2]' --driver-memory 3g
   --class com.ecommerce.analytics.MainApp
   dist/ecommerce-analytics.jar all
 \end{lstlisting}
-  \end{minipage}
+
+  \vspace{4mm}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}r l r l@{}}
+    \toprule
+    \textbf{124\,751} & transactions analysées & \textbf{10\,193} & clients uniques \\
+    \textbf{49,90 M EUR} & de chiffre d'affaires & \textbf{399,98 EUR} & de panier moyen \\
+    \textbf{3,01 \%} & de transactions signalées & \textbf{14} & rapports produits \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{3mm}
+  \begin{block}{Restitution}
+    Une commande produit les quatorze rapports et une page HTML autonome,
+    en thème clair et en thème sombre.
+  \end{block}
 
   \note{Collectif, 2 minutes. Lancer la commande, puis ouvrir
   output/dashboard.html par double clic. Commenter deux résultats métier : la
   concentration du chiffre d'affaires sur les marchands Electronics, et la
-  cohérence entre segment RFM calculé et segment déclaré. La page est
-  régénérée à chaque exécution, jamais éditée à la main.}
-\end{frame}
-\fondclair\pieddepage
-
-% ================================================================ 16
-\begin{frame}{Ce qui rend le projet reproductible}
-  \framesubtitle{Un tiers doit pouvoir rejouer notre pipeline sans nous}
-
-  \vspace{5mm}
-  \begin{columns}[t,onlytextwidth]
-    \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Conteneur}\\
-      {\small \texttt{Dockerfile} et \texttt{docker-compose} figent Spark 3.5.6,
-      Scala 2.12 et Java 17.}\\[4mm]
-      {\color{indigo}\bfseries\small Commandes unifiées}\\
-      {\small \texttt{Makefile} sous Linux et macOS, \texttt{make.ps1} sous
-      Windows, scripts confinés pour macOS.}
-    \column{0.47\textwidth}
-      {\color{indigo}\bfseries\small Intégration continue}\\
-      {\small GitHub Actions compile, teste et empaquette à chaque \texttt{push}.}\\[4mm]
-      {\color{indigo}\bfseries\small Régression}\\
-      {\small Vingt cas isolés couvrant les frontières et les règles métier,
-      rapport JUnit exploitable.}
-  \end{columns}
-
-  \vspace{9mm}
-  \chiffre{20 / 20}{cas de régression au vert}\hfill
-  \chiffre{108 s}{pipeline complet en local}\hfill
-  \chiffre{0}{chemin codé en dur}
-
-  \note{Collectif, 90 secondes. Préciser honnêtement : la voie Docker est
-  documentée à partir des images officielles, elle n'a pas encore été exécutée
-  faute de démon Docker démarré. Le déploiement cluster est de même documenté
-  mais non exécuté.}
+  cohérence entre segment RFM calculé et segment déclaré.}
 \end{frame}
 
 % ================================================================ 17
-\begin{frame}{Ce que nous ne prétendons pas avoir prouvé}
-  \framesubtitle{Déclarer les limites vaut mieux que les laisser découvrir}
+\begin{frame}{Reproductibilité}
+  \vspace{2mm}
+  \begin{columns}[t,onlytextwidth]
+    \column{0.47\textwidth}
+      \begin{block}{Environnement figé}
+        \footnotesize \texttt{Dockerfile} et \texttt{docker-compose} figent
+        Spark 3.5.6, Scala 2.12 et Java 17. \texttt{Makefile} sous Linux et
+        macOS, \texttt{make.ps1} sous Windows.
+      \end{block}
+    \column{0.47\textwidth}
+      \begin{block}{Vérification automatique}
+        \footnotesize GitHub Actions compile, teste et empaquette à chaque
+        \texttt{push}. Vingt cas de régression couvrent les frontières et les
+        règles métier.
+      \end{block}
+  \end{columns}
 
-  \vspace{5mm}
+  \vspace{6mm}
+  \begin{center}
   \small
-  \begin{tabular}{@{}p{0.36\textwidth} p{0.58\textwidth}@{}}
+  \begin{tabular}{@{}r l @{\hspace{12mm}} r l @{\hspace{12mm}} r l@{}}
+    \textbf{20 / 20} & tests au vert &
+    \textbf{108 s} & pipeline complet &
+    \textbf{0} & chemin codé en dur \\
+  \end{tabular}
+  \end{center}
+
+  \note{Collectif, 90 secondes. Préciser honnêtement : la voie Docker est
+  documentée à partir des images officielles, elle n'a pas encore été exécutée
+  faute de démon Docker démarré. Le déploiement cluster est documenté mais non
+  exécuté.}
+\end{frame}
+
+\section{Limites, conclusion et perspectives}
+
+% ================================================================ 18
+\begin{frame}{Limites du travail}
+  \vspace{2mm}
+  \small
+  \begin{tabular}{@{}p{0.34\textwidth} p{0.58\textwidth}@{}}
     \toprule
     \textbf{Limite} & \textbf{Précision} \\
     \midrule
-    Les données sont synthétiques &
-      Générées par le script du sujet. Les conclusions démontrent une méthode. \\[1.5mm]
-    La mesure n'est pas une expérience &
+    Données synthétiques &
+      Générées par le script fourni. Les conclusions démontrent une méthode. \\[1.5mm]
+    Mesure exploratoire &
       Un passage par mode, sur un poste partagé, avec 37 \% de variabilité. \\[1.5mm]
-    Le cluster est documenté, pas exécuté &
+    Cluster documenté, non exécuté &
       Commandes HDFS, YARN et \texttt{cluster.conf} figurent au README. \\[1.5mm]
-    La détection de fraude est pédagogique &
-      Quatre règles seuillées ne constituent pas un modèle validé. \\[1.5mm]
-    Le conteneur reste à éprouver &
-      Le \texttt{Dockerfile} s'appuie sur les images officielles, sans construction. \\
+    Détection pédagogique &
+      Quatre règles seuillées ne constituent pas un modèle de fraude validé. \\[1.5mm]
+    Conteneur non construit &
+      Le \texttt{Dockerfile} s'appuie sur les images officielles. \\
     \bottomrule
   \end{tabular}
 
-  \vspace{6mm}
-  {\color{indigo}\itshape\small Avec une semaine de plus : répéter le benchmark en
-  alternant l'ordre, construire l'image Docker, mesurer la couverture de lignes.}
-
   \note{Collectif, 60 secondes. Cette diapositive désamorce la moitié des
   questions du jury. Annoncer ces limites nous mêmes vaut mieux que de les
-  subir. Chacune est déjà écrite dans COUVERTURE\_SUJET.md.}
-\end{frame}
-
-% ================================================================ 18
-\begin{frame}{Conclusion}
-  \framesubtitle{Ce que ce pipeline établit}
-
-  \vspace{8mm}
-  \begin{itemize}\itemsep7mm
-    \item Les 138\,047 lignes lues se reconstituent exactement.
-    \item Chaque rejet porte son motif, et tout chiffre remonte à sa ligne source.
-    \item Les résultats sont exploitables : rétention de 38,06 \%, 451 Champions,
-          3\,760 transactions à contrôler.
-    \item Le même code passe du poste au cluster sans être réécrit.
-    \item Les limites sont écrites, la mesure est publiée telle quelle.
-  \end{itemize}
-
-  \note{Collectif, 90 secondes. Ne pas répéter le contenu des parties : cette
-  diapositive dit ce que le pipeline garantit. Le message à laisser au jury :
-  la difficulté n'était pas d'écrire des transformations Spark, mais de
-  garantir qu'aucun chiffre présenté ne soit indéfendable. Enchaîner ensuite
-  directement sur les questions.}
+  subir.}
 \end{frame}
 
 % ================================================================ 19
-\fondsombre{
-  \fill[indigofonce,rounded corners=20pt]
-      (0.68\paperwidth,0.30\paperheight) rectangle (1.06\paperwidth,1.10\paperheight);
-  \fill[indigo] (0.93\paperwidth,0.08\paperheight) circle (2.2cm);
-}
+\begin{frame}{Bilan et perspectives}
+  \vspace{2mm}
+  \begin{block}{Bilan}
+    Les 138\,047 lignes lues se reconstituent exactement. Chaque rejet porte
+    son motif. Le même code passe du poste au cluster sans être réécrit.
+  \end{block}
+
+  \vspace{3mm}
+  \textbf{Perspectives}
+  \vspace{1mm}
+  \begin{columns}[t,onlytextwidth]
+    \column{0.47\textwidth}
+      \footnotesize
+      \begin{itemize}\itemsep2mm
+        \item Répéter le benchmark en alternant l'ordre des modes
+        \item Construire et éprouver l'image du conteneur
+      \end{itemize}
+    \column{0.47\textwidth}
+      \footnotesize
+      \begin{itemize}\itemsep2mm
+        \item Exécuter le pipeline sur un cluster réel
+        \item Mesurer la couverture de lignes des tests
+      \end{itemize}
+  \end{columns}
+
+  \note{Collectif, 90 secondes. Terminer sur la dernière phrase, c'est le
+  message que le jury doit retenir. Enchaîner ensuite directement sur les
+  questions. Chaque membre peut être interrogé sur le code d'un autre.}
+\end{frame}
+
+% ================================================================ 20
 \sanspied
 \begin{frame}[plain]
-  \vspace{1.15cm}
-  {\color{white}\fontsize{34}{38}\selectfont\bfseries MERCI}\\[3mm]
-  {\color{lavande}\Large\bfseries DE VOTRE ATTENTION}\\[6mm]
-  {\color{lavande}\rule{3cm}{1.2pt}}\\[9mm]
+  \vspace{2.6cm}
+  \begin{center}
+    {\LARGE Merci de votre attention}
+  \end{center}
 
-  {\color{lavandepale}\footnotesize Groupe 9 \quad\textbullet\quad ABOUTA Eudoxie
-  \quad\textbullet\quad BAMBA Issouf \quad\textbullet\quad AHOGA Josias}
-
-  \note{Collectif, puis dix minutes de questions. Chaque membre peut être
-  interrogé sur le code d'un autre. Réviser en priorité : la différence entre
-  les deux notions de rejet, le choix de rangeBetween sur des secondes, et
-  l'exclusion des horizons non observables dans la rétention.}
+  \note{Réviser en priorité : la différence entre les deux notions de rejet,
+  le choix de rangeBetween sur des secondes, et l'exclusion des horizons non
+  observables dans le calcul de la rétention.}
 \end{frame}
 
 \end{document}
