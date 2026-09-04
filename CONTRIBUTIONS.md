@@ -162,7 +162,7 @@ Chaque entrée est datée et signée par le relecteur, qui n'est jamais l'auteur
 
 | Date | Module | Auteur | Relecteur | Points contrôlés | Remarques et suites | Commande de vérification |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| À COMPLÉTER | Parties 1 et 7 | Eudoxie | Josias | Aucun chemin ni seuil codé en dur, `reference.conf` couvre toutes les clés, l'assembly n'embarque pas Spark | À COMPLÉTER | `sbt assembly` puis `unzip -l` sur le JAR |
+| 2026-09-04 | Parties 1 et 7 | Eudoxie | Josias | Aucun chemin ni seuil codé en dur, `reference.conf` couvre toutes les clés, l'assembly n'embarque pas Spark | Conforme. Aucune valeur métier codée en dur : chemins, seuils de validation et bornes horaires viennent tous de la configuration, et chaque clé optionnelle est lue avec un repli. Deux remarques transmises. La première : sous `spark-submit`, `app.spark.master` est ignoré même sans `--master`, le test portant aussi sur la propriété `SPARK_SUBMIT` ; le comportement est voulu, mais cette clé ne sert donc qu'à `sbt run` et aux tests, ce qui mérite d'être su. La seconde : `spark.sql.adaptive.autoBroadcastJoinThreshold` valant -1, l'exécution adaptative activée en Partie 5 ne peut pas convertir dynamiquement une jointure en diffusion. C'est cohérent avec le choix de rendre la diffusion explicite et mesurable, mais les deux modules doivent l'expliquer de la même façon. | `sbt assembly` puis inspection du contenu du JAR |
 | 2026-09-04 | Partie 2, ingestion | Eudoxie | Issouf | Les quatre stratégies de lecture, le message d'erreur nomme la source, les volumes lus correspondent au sujet | Conforme. Volumes relus : 138 047, 12 000, 6 000, 600. Remarque transmise : le `count` de `DataIngestion.read` sert aussi de déclencheur d'erreur, ce qui mérite le commentaire déjà présent. | `bash scripts/run-macos.sh ingestion` |
 | 2026-09-04 | Partie 2, validation | Eudoxie | Issouf | Une ligne nulle est rejetée, un motif multiple est concaténé, le taux de rejet n'est pas nul | Conforme. Taux de rejet non nuls sur les quatre jeux. Vérifié qu'une transaction violant deux règles porte bien deux motifs concaténés. | Lecture de `output/csv/rejected_transactions` |
 | À COMPLÉTER | Partie 3, UDF | Issouf | Eudoxie | Entrée nulle, vide, date impossible, frontières 21h59 et 22h00 | À COMPLÉTER | `sbt test`, cas « frontieres exactes de day_period » |
@@ -258,3 +258,13 @@ Les utilisateurs sans achat retenu n'ont pas de score RFM.
 25. Toutes les remontées vers le pilote sont bornées : `DashboardReport` applique un `limit` avant chaque `collect`, et aucune action ne ramène un volume non borné. Un `collect` sur les 124 751 transactions enrichies ferait tomber le pilote sans rien apporter, puisque la restitution n'affiche que des agrégats.
 
 26. Les seuils de partitionnement de shuffle sont configurables et non codés en dur : `app.spark.shuffle.partitions` vaut 8, valeur adaptée à un jeu de cette taille, là où la valeur par défaut de 200 produirait des partitions de quelques kilooctets et un surcoût d'ordonnancement supérieur au calcul lui même.
+
+### Observations transmises à l'auteur de la Partie 3
+
+Ces trois points sont issus de la relecture du module temporel et de fenêtrage. Aucun n'est bloquant, aucun ne change un résultat, et ils sont consignés ici pour que le groupe puisse les défendre.
+
+1. `TimeFeatures.parse` construit un `DateTimeFormatter` à chaque appel, donc une fois par ligne. `DateTimeFormatter` n'étant pas sérialisable, il ne peut pas être stocké dans `TimeSettings` ni capturé dans la fermeture de l'UDF. La piste retenue si le volume grossissait serait un `@transient lazy val` porté par l'objet, construit une seule fois par exécuteur. Sur 124 751 lignes le coût reste absorbé par le reste du pipeline.
+
+2. `catalog_merchant_mismatch` compare deux identifiants sans opérateur de comparaison tolérant aux valeurs nulles. Un produit dont le `merchant_id` du catalogue serait nul produirait donc un indicateur nul plutôt que 0. Vérification faite sur le jeu livré : aucune occurrence, 512 divergences et 124 239 concordances pour 124 751 lignes, sans valeur nulle. Le point est noté comme robustesse, pas comme défaut.
+
+3. `active_days_7d` s'appuie sur un `collect_set` évalué sur une fenêtre glissante, ce qui en fait l'opération la plus coûteuse du pipeline. Le calcul est correct et répond exactement à la Question 3.3, puisqu'il compte des dates distinctes et non des transactions. C'est simplement le point à surveiller en premier si le volume était multiplié.
