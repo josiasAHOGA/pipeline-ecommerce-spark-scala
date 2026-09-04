@@ -18,6 +18,15 @@ Compile / run := Defaults.runTask(Compile / fullClasspath, Compile / run / mainC
 Compile / runMain := Defaults.runMainTask(Compile / fullClasspath, Compile / run / runner).evaluated
 javaOptions ++= Seq("-Xmx3g", "-Duser.timezone=UTC", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
 javaOptions ++= Seq("java.lang", "java.lang.invoke", "java.lang.reflect", "java.io", "java.net", "java.nio", "java.util", "java.util.concurrent", "java.util.concurrent.atomic", "sun.nio.cs", "sun.security.action", "sun.util.calendar").map(p => s"--add-opens=java.base/$p=ALL-UNNAMED")
+// winutils : sans cela, sbt test échoue sous Windows à l'écriture Hadoop (dashboard.html).
+javaOptions ++= {
+  val hadoop = baseDirectory.value / ".runtime" / "hadoop"
+  if (hadoop.exists) Seq("-Dhadoop.home.dir=" + hadoop.getAbsolutePath) else Seq.empty
+}
+envVars ++= {
+  val hadoop = baseDirectory.value / ".runtime" / "hadoop"
+  if (hadoop.exists) Map("HADOOP_HOME" -> hadoop.getAbsolutePath) else Map.empty
+}
 Test / test := (Test / runMain).toTask(" com.ecommerce.RegressionSuite").value
 assembly / mainClass := Some("com.ecommerce.analytics.MainApp")
 assembly / assemblyJarName := "ecommerce-analytics.jar"
