@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 720" width="1240" height="720" role="img" aria-labelledby="titre desc">
+  <title id="titre">Architecture en médaillon du pipeline EcommerceAnalytics</title>
+  <desc id="desc">Trois couches successives, Bronze pour les fichiers bruts, Silver pour les données validées et enrichies, Gold pour les rapports métier, avec les classes Scala responsables de chaque étape.</desc>
+
+  <style>
+    .bg      { fill:#fbfaf8; }
+    .card    { fill:#ffffff; stroke:#e4e0d9; stroke-width:1; }
+    .band    { fill:#f4f1ec; stroke:#e4e0d9; stroke-width:1; }
+    .ink     { fill:#16151a; font-family:'Segoe UI',system-ui,sans-serif; }
+    .soft    { fill:#5d5a66; font-family:'Segoe UI',system-ui,sans-serif; }
+    .mono    { font-family:'Cascadia Mono',Consolas,monospace; }
+    .serif   { font-family:'Palatino Linotype',Palatino,Georgia,serif; }
+    .flow    { stroke:#605abe; stroke-width:2; fill:none; }
+    .tick    { stroke:#e4e0d9; stroke-width:1; }
+    .bronze  { fill:#a9713f; }
+    .silver  { fill:#78838f; }
+    .gold    { fill:#b08a2e; }
+    .indigo  { fill:#605abe; }
+    @media (prefers-color-scheme: dark) {
+      .bg   { fill:#131318; }
+      .card { fill:#1b1b22; stroke:#2e2e38; }
+      .band { fill:#191920; stroke:#2e2e38; }
+      .ink  { fill:#f2f0ee; }
+      .soft { fill:#a5a1ae; }
+      .tick { stroke:#2e2e38; }
+      .flow { stroke:#a9a2ee; }
+      .bronze { fill:#cf9a63; }
+      .silver { fill:#a3adb9; }
+      .gold   { fill:#d8ac5c; }
+      .indigo { fill:#a9a2ee; }
+    }
+  </style>
+
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#605abe"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1240" height="720"/>
+
+  <!-- Titre -->
+  <text class="gold mono" x="48" y="52" font-size="12" letter-spacing="2.4">GROUPE 9  ·  SPARK 3.5.6  ·  SCALA 2.12</text>
+  <text class="ink serif" x="48" y="88" font-size="30">Architecture en médaillon du pipeline</text>
+  <text class="soft" x="48" y="116" font-size="14">Chaque couche a un propriétaire, un contrat de données et une sortie vérifiable. Les volumes indiqués proviennent de l'exécution réelle.</text>
+  <line class="tick" x1="48" y1="140" x2="1192" y2="140"/>
+
+  <!-- ================= BRONZE ================= -->
+  <text class="bronze mono" x="48" y="178" font-size="12" letter-spacing="2.2">BRONZE</text>
+  <text class="ink" x="48" y="202" font-size="16" font-weight="600">Données brutes</text>
+  <text class="soft" x="48" y="222" font-size="12.5">Lecture multi format, schéma explicite</text>
+
+  <rect class="card" x="48" y="240" width="316" height="228" rx="2"/>
+  <text class="soft mono" x="70" y="268" font-size="10.5" letter-spacing="1.6">SOURCES</text>
+
+  <text class="ink mono" x="70" y="296" font-size="12.5">transactions.csv</text>
+  <text class="soft mono" x="342" y="296" font-size="12.5" text-anchor="end">138 047</text>
+  <line class="tick" x1="70" y1="308" x2="342" y2="308"/>
+
+  <text class="ink mono" x="70" y="330" font-size="12.5">users.json</text>
+  <text class="soft mono" x="342" y="330" font-size="12.5" text-anchor="end">12 000</text>
+  <line class="tick" x1="70" y1="342" x2="342" y2="342"/>
+
+  <text class="ink mono" x="70" y="364" font-size="12.5">products.parquet</text>
+  <text class="soft mono" x="342" y="364" font-size="12.5" text-anchor="end">6 000</text>
+  <line class="tick" x1="70" y1="376" x2="342" y2="376"/>
+
+  <text class="ink mono" x="70" y="398" font-size="12.5">merchants.csv</text>
+  <text class="soft mono" x="342" y="398" font-size="12.5" text-anchor="end">600</text>
+  <line class="tick" x1="70" y1="410" x2="342" y2="410"/>
+
+  <text class="indigo mono" x="70" y="436" font-size="11">DataIngestion.scala</text>
+  <text class="soft" x="70" y="454" font-size="11">Membre A  ·  ABOUTA Eudoxie</text>
+
+  <path class="flow" d="M 372 354 L 428 354" marker-end="url(#fleche)"/>
+
+  <!-- ================= SILVER ================= -->
+  <text class="silver mono" x="440" y="178" font-size="12" letter-spacing="2.2">SILVER</text>
+  <text class="ink" x="440" y="202" font-size="16" font-weight="600">Données validées et enrichies</text>
+  <text class="soft" x="440" y="222" font-size="12.5">Rejets conservés et motivés, puis jointures</text>
+
+  <rect class="card" x="440" y="240" width="316" height="228" rx="2"/>
+  <text class="soft mono" x="462" y="268" font-size="10.5" letter-spacing="1.6">CONTRÔLES ET ENRICHISSEMENT</text>
+
+  <text class="ink mono" x="462" y="296" font-size="12.5">lignes valides</text>
+  <text class="soft mono" x="734" y="296" font-size="12.5" text-anchor="end">136 157</text>
+  <line class="tick" x1="462" y1="308" x2="734" y2="308"/>
+
+  <text class="ink mono" x="462" y="330" font-size="12.5">rejets motivés</text>
+  <text class="soft mono" x="734" y="330" font-size="12.5" text-anchor="end">1 890</text>
+  <line class="tick" x1="462" y1="342" x2="734" y2="342"/>
+
+  <text class="ink mono" x="462" y="364" font-size="12.5">rejets de jointure</text>
+  <text class="soft mono" x="734" y="364" font-size="12.5" text-anchor="end">11 406</text>
+  <line class="tick" x1="462" y1="376" x2="734" y2="376"/>
+
+  <text class="ink mono" x="462" y="398" font-size="12.5">enriched_transactions</text>
+  <text class="soft mono" x="734" y="398" font-size="12.5" text-anchor="end">124 751</text>
+  <line class="tick" x1="462" y1="410" x2="734" y2="410"/>
+
+  <text class="indigo mono" x="462" y="436" font-size="11">DataValidation  ·  TimeFeatures  ·  DataTransformation</text>
+  <text class="soft" x="462" y="454" font-size="11">Membres A et B  ·  ABOUTA Eudoxie, BAMBA Issouf</text>
+
+  <path class="flow" d="M 764 354 L 820 354" marker-end="url(#fleche)"/>
+
+  <!-- ================= GOLD ================= -->
+  <text class="gold mono" x="832" y="178" font-size="12" letter-spacing="2.2">GOLD</text>
+  <text class="ink" x="832" y="202" font-size="16" font-weight="600">Rapports métier</text>
+  <text class="soft" x="832" y="222" font-size="12.5">CSV, Parquet et tableau de bord HTML</text>
+
+  <rect class="card" x="832" y="240" width="360" height="228" rx="2"/>
+  <text class="soft mono" x="854" y="268" font-size="10.5" letter-spacing="1.6">SORTIES DÉCISIONNELLES</text>
+
+  <text class="ink mono" x="854" y="294" font-size="12">quality_report</text>
+  <text class="ink mono" x="854" y="316" font-size="12">merchant_kpis  ·  merchant_age_sales</text>
+  <text class="ink mono" x="854" y="338" font-size="12">cohort_retention  ·  cohort_matrix</text>
+  <text class="ink mono" x="854" y="360" font-size="12">rfm_customers  ·  rfm_cross_segments</text>
+  <text class="ink mono" x="854" y="382" font-size="12">top_products  ·  category_region</text>
+  <text class="ink mono" x="854" y="404" font-size="12">suspicious_top20  ·  summary</text>
+  <line class="tick" x1="854" y1="416" x2="1170" y2="416"/>
+
+  <text class="indigo mono" x="854" y="438" font-size="11">Analytics.scala  ·  DashboardReport.scala</text>
+  <text class="soft" x="854" y="456" font-size="11">Membre C  ·  AHOGA Josias</text>
+
+  <!-- ================= BANDE TRANSVERSE ================= -->
+  <rect class="band" x="48" y="512" width="1144" height="124" rx="2"/>
+  <text class="soft mono" x="72" y="540" font-size="10.5" letter-spacing="1.6">SOCLE TRANSVERSE</text>
+
+  <text class="ink mono" x="72" y="570" font-size="12.5">application.conf</text>
+  <text class="soft" x="72" y="590" font-size="11.5">Chemins, seuils et paramètres Spark.</text>
+  <text class="soft" x="72" y="608" font-size="11.5">Aucune valeur codée en dur.</text>
+
+  <line class="tick" x1="360" y1="552" x2="360" y2="612"/>
+
+  <text class="ink mono" x="392" y="570" font-size="12.5">SparkOptimizations</text>
+  <text class="soft" x="392" y="590" font-size="11.5">cache, persist MEMORY_AND_DISK_SER,</text>
+  <text class="soft" x="392" y="608" font-size="11.5">unpersist et broadcast des marchands.</text>
+
+  <line class="tick" x1="712" y1="552" x2="712" y2="612"/>
+
+  <text class="ink mono" x="744" y="570" font-size="12.5">MainApp</text>
+  <text class="soft" x="744" y="590" font-size="11.5">Orchestration, exécution par étape,</text>
+  <text class="soft" x="744" y="608" font-size="11.5">chronométrage et arrêt propre.</text>
+
+  <line class="tick" x1="1000" y1="552" x2="1000" y2="612"/>
+
+  <text class="ink mono" x="1032" y="570" font-size="12.5">Docker et CI</text>
+  <text class="soft" x="1032" y="590" font-size="11.5">Image figée et</text>
+  <text class="soft" x="1032" y="608" font-size="11.5">vérification à chaque push.</text>
+
+  <path class="flow" d="M 206 468 L 206 512" marker-end="url(#fleche)" opacity="0.35"/>
+  <path class="flow" d="M 598 468 L 598 512" marker-end="url(#fleche)" opacity="0.35"/>
+  <path class="flow" d="M 1012 468 L 1012 512" marker-end="url(#fleche)" opacity="0.35"/>
+
+  <text class="soft" x="48" y="678" font-size="11.5">Lecture : 138 047 transactions brutes, moins 1 890 rejets de validation, moins 11 406 références non enrichissables, donnent 124 751 transactions analysées.</text>
+  <text class="soft" x="48" y="698" font-size="11.5">Les données sources sont synthétiques. Les résultats illustrent la méthode, ils ne décrivent pas une entreprise réelle.</text>
+</svg>
