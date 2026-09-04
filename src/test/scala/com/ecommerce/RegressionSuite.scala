@@ -101,6 +101,27 @@ object RegressionSuite {
         assert(rows == Seq("Evening", "Night", "Night"), "périodes obtenues : " + rows.mkString(", "))
       }
 
+      check("libelles de jour et de mois lisibles, week end le samedi et le dimanche") {
+        val s = TimeFeatures.settings(c)
+        val samedi = TimeFeatures.features("20240106143000", s).get
+        assert(samedi.day_of_week == "Samedi", "libellé obtenu : " + samedi.day_of_week)
+        assert(samedi.month == "Janvier", "libellé obtenu : " + samedi.month)
+        assert(samedi.is_weekend == 1, "le 6 janvier 2024 est un samedi")
+        assert(TimeFeatures.features("20240107143000", s).get.is_weekend == 1,
+          "le dimanche appartient aussi au week end")
+        val lundi = TimeFeatures.features("20240108143000", s).get
+        assert(lundi.is_weekend == 0 && lundi.day_of_week == "Lundi", "lundi est un jour ouvré")
+      }
+
+      check("addBehavior refuse un DataFrame auquel il manque des colonnes") {
+        val incomplet = Seq(("t1", "u")).toDF("transaction_id", "user_id")
+        val message =
+          try { new DataTransformation(c).addBehavior(incomplet); "aucune erreur levée" }
+          catch { case e: IllegalArgumentException => e.getMessage }
+        assert(message.contains("amount") && message.contains("epoch_seconds"),
+          "le contrat doit nommer les colonnes absentes, message obtenu : " + message)
+      }
+
       // ------------------------------------------------ Partie 2 : validation
 
       val tx = Seq(
@@ -202,6 +223,28 @@ object RegressionSuite {
         val repeated = samples.filter(col("transaction_id") === "a").union(samples.filter(col("transaction_id") === "a"))
         assert(new DataTransformation(c).addBehavior(repeated).first().getAs[Int]("active_days_7d") == 1,
           "deux achats le même jour ne font pas deux jours actifs")
+      }
+
+      check("rang, compteur par utilisateur et delai en jours entiers") {
+        val f = behavior.filter(col("transaction_id") === "f").first()
+        assert(f.getAs[Int]("transaction_rank") == 6, "la transaction f est le sixième achat de u")
+        assert(f.getAs[Long]("user_transaction_count") == 7, "u totalise sept transactions")
+        assert(f.getAs[Int]("days_since_previous") == 3, "du 5 au 8 janvier : trois jours entiers")
+        val g = behavior.filter(col("transaction_id") === "g").first()
+        assert(g.getAs[Int]("days_since_previous") == 0, "deux achats le même jour, zéro jour d'écart")
+        assert(math.abs(g.getAs[Double]("hours_since_previous") - 0.02) < 0.001,
+          "soixante secondes valent 0,02 heure")
+      }
+
+      check("un day_period nul ne rend pas la detection indeterminee") {
+        val sansPeriode = Seq(("x1", "flou", 10.0, "20240101120000", null.asInstanceOf[String], "CRYPTO"))
+          .toDF("transaction_id", "user_id", "amount", "timestamp", "day_period", "payment_method")
+          .withColumn("transaction_ts", to_timestamp(col("timestamp"), "yyyyMMddHHmmss"))
+          .withColumn("epoch_seconds", col("transaction_ts").cast("long"))
+          .withColumn("transaction_date", to_date(col("transaction_ts")))
+        val r = new DataTransformation(c).addBehavior(sansPeriode).first()
+        assert(r.getAs[Int]("suspicion_flags") == 1, "seul le moyen de paiement reste évaluable")
+        assert(r.getAs[Int]("is_suspicious") == 0, "un signal isolé ne suffit pas, et le total n'est pas nul")
       }
 
       // ------------------------------------------------ Partie 4 : analytique
