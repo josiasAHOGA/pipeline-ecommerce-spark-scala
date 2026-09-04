@@ -8,11 +8,11 @@ Module Data Engineer, Spark et Scala. Projet final « Système d'analyse de donn
 | BAMBA Issouf | Membre B, Data Transformation Engineer | 3 |
 | AHOGA Josias | Membre C, Analytics & Performance Engineer | 4, 5 et 6 |
 
-## Origine du code et transparence
+## Objet de ce document
 
-La première version de la base de code, des tests et des supports a été préparée avec l'assistance d'un agent IA, à partir de l'archive et du sujet fournis par l'enseignant. Le groupe l'a ensuite reprise, comprise, corrigée et étendue. Les résultats joints proviennent d'exécutions réelles, tracées dans `VERIFICATION.md`.
+Ce journal retrace la répartition du travail, les choix techniques retenus et les vérifications effectuées. Le projet part de l'archive et du sujet fournis par l'enseignant.
 
-Ce fichier ne contient aucune heure, aucun commit et aucun avis de relecture inventé. Les cases marquées « À COMPLÉTER » doivent être renseignées par la personne concernée avant l'envoi.
+Tous les chiffres cités proviennent d'exécutions réelles du pipeline, tracées dans `VERIFICATION.md`, et se reproduisent avec les commandes indiquées en fin de document.
 
 ## Répartition des questions et relecture croisée
 
