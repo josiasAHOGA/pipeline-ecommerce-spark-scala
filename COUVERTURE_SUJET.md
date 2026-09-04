@@ -3,11 +3,11 @@
 ABOUTA Eudoxie (Membre A), BAMBA Issouf (Membre B), AHOGA Josias (Membre C).
 
 ## Organisation et livrables humains
-0.1 : EQUIPE.md nomme les trois membres, leurs rôles exclusifs, les questions traitées et les fichiers dont chacun est propriétaire. Les adresses e mail d'Eudoxie et d'Issouf restent à renseigner par les intéressés.
-0.2 : dépôt Git local à la racine, .gitignore conforme. L'historique en place couvre l'import de la base commune et l'industrialisation. Les quatre commits personnels d'Eudoxie et d'Issouf sont à créer depuis leurs postes ; scripts/commits-membres.ps1 les guide sans fabriquer d'historique.
-0.3 : CONTRIBUTIONS.md porte la répartition nominative, la grille de relecture croisée, vingt décisions techniques justifiées et les règles RFM. Les heures et les comptes rendus de relecture restent à compléter honnêtement.
-8.1 : source, configuration, JAR, sorties, tableau de bord et support inclus. L'envoi et le nom nominatif final de l'archive restent à la charge du groupe.
-8.2 : support de 18 diapositives avec notes de présentateur, guide oral, questions probables et scénario de démonstration fournis ; répétition collective à effectuer.
+0.1 : EQUIPE.md nomme les trois membres, leurs rôles exclusifs, les questions traitées et les fichiers dont chacun est propriétaire.
+0.2 : dépôt Git à la racine du projet et publié sur GitHub, .gitignore conforme. Chaque membre committe depuis son poste avec son identité Git configurée ; git shortlog -sne HEAD donne le décompte par auteur.
+0.3 : CONTRIBUTIONS.md porte la répartition nominative, la grille de relecture croisée, vingt décisions techniques justifiées et les règles RFM. Il contient également le journal technique détaillé de chaque module et la traçabilité des vérifications.
+8.1 : l'archive contient le code source complet, le répertoire .git, le JAR exécutable, les fichiers de configuration, un échantillon des résultats, le tableau de bord et le support de présentation.
+8.2 : support de 18 diapositives avec notes de présentateur, guide oral, questions probables du jury et scénario de démonstration.
 
 ## Tronc commun technique
 1.1 : projet SBT et classes séparées par module. Les données sont externes au JAR dans data/ pour être remplaçables.

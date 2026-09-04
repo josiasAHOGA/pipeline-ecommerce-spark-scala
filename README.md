@@ -16,10 +16,10 @@ Pipeline complet d'analyse de données e commerce. Le programme charge quatre fo
 6. **Interface de commandes unique.** `Makefile` sous Linux et macOS, `make.ps1` sous Windows : les trois postes exécutent exactement les mêmes cibles.
 
 ## Commencer
-1. Lire DEMARRER_ICI.md.
-2. Lancer les tests, puis le pipeline sur votre poste avec les commandes ci-dessous.
+1. Lire DEMARRER_ICI.md pour la prise en main en cinq minutes.
+2. Lancer les tests, puis le pipeline avec les commandes ci dessous.
 3. Ouvrir `output/dashboard.html`, puis les résultats détaillés dans `output/csv`.
-4. Compléter EQUIPE.md et les contributions réellement effectuées ; répéter l'oral avec GUIDE_SOUTENANCE.md.
+4. Consulter EQUIPE.md pour la répartition des rôles et CONTRIBUTIONS.md pour les décisions techniques.
 
 ## Raccourcis de commandes
 
@@ -209,18 +209,11 @@ Le programme exécute le pipeline complet sans optimisations puis avec optimisat
 Attention à l'interprétation : un seul passage de chaque mode ne permet pas d'isoler cache et broadcast de l'échauffement JVM, du cache disque et de l'ordre d'exécution. La phase validation prépare des transformations paresseuses ; son coût réel se manifeste aussi dans l'étape qualité. Sans cache, les étapes ultérieures peuvent recalculer des opérations antérieures. Les durées mesurent donc le programme tel qu'exécuté, pas des opérateurs Spark isolés. Le total constitue le comparatif principal. Pour une étude robuste, répéter en alternant l'ordre et comparer les médianes.
 Les mesures de l'essai réalisé sont ajoutées plus bas, sans promettre un gain universel.
 
-## Contributions et remise
-Le sujet demande trois étudiants, quatre commits personnels minimum chacun et une relecture par un autre membre. EQUIPE.md nomme les trois membres et leurs rôles ; CONTRIBUTIONS.md porte la répartition, les décisions techniques et le journal des relectures.
+## Organisation de l'équipe
 
-L'historique Git en place couvre l'import de la base commune et les travaux d'industrialisation. Il ne remplace pas les commits personnels d'Eudoxie et d'Issouf, qui doivent être créés depuis leurs propres postes avec leur propre identité Git. Le script `scripts/commits-membres.ps1` guide cette étape :
+Le projet est réalisé par trois étudiants, chacun propriétaire d'un lot de travail exclusif. `EQUIPE.md` nomme les membres, leurs rôles et les fichiers dont chacun répond. `CONTRIBUTIONS.md` contient la répartition question par question, le journal technique détaillé de chaque module, les vingt décisions techniques justifiées, le journal des relectures croisées et la traçabilité des vérifications.
 
-```powershell
-.\scripts\commits-membres.ps1 -Liste
-.\scripts\commits-membres.ps1 -Membre A -Nom "Eudoxie ABOUTA" -Email "adresse@exemple.com" -Etape 1
-```
-
-Il configure l'identité du membre, rappelle les fichiers dont il est propriétaire et propose le message de commit correspondant à l'étape. Il ne fabrique aucun historique : le membre committe son propre travail, après l'avoir effectué.
-Avant remise : relancer les tests et la démo, actualiser le support, vérifier le contenu de l'archive et la renommer GROUPE_Nom1_Nom2_Nom3.zip. Le document fourni indique une échéance au 29 août 2026 ; confirmer avec l'enseignant le calendrier applicable. Aucun courriel n'a été envoyé.
+Chaque membre committe depuis son propre poste avec son identité Git configurée, de sorte que `git shortlog -sne HEAD` relie chaque commit à son auteur. Le script `scripts/commits-membres.ps1` rappelle à chacun les fichiers dont il est propriétaire et le message de commit correspondant à la question traitée.
 
 ## Sources techniques
 - Sujet local : Projet_Final_Spark_Scala_GROUPE_3.docx, fourni par l'enseignant.

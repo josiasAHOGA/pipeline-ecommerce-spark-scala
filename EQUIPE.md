@@ -9,7 +9,7 @@ Trois membres, trois rôles distincts, conformément à la Question 0.1 du sujet
 | Champ | Valeur |
 | :-- | :-- |
 | Nom et prénom | ABOUTA Eudoxie |
-| Adresse e mail | À RENSEIGNER PAR EUDOXIE |
+| Adresse e mail |  |
 | Nom configuré dans Git (`git config user.name`) | Eudoxie ABOUTA |
 | Parties du sujet | Parties 1, 2 et 7 |
 | Questions traitées | 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 2.5 (bonus), 7.1 |
@@ -28,7 +28,7 @@ Fichiers dont Eudoxie est propriétaire :
 | Champ | Valeur |
 | :-- | :-- |
 | Nom et prénom | BAMBA Issouf |
-| Adresse e mail | À RENSEIGNER PAR ISSOUF |
+| Adresse e mail |  |
 | Nom configuré dans Git (`git config user.name`) | Issouf BAMBA |
 | Parties du sujet | Partie 3 |
 | Questions traitées | 3.1, 3.2, 3.3, 3.4 (bonus) |

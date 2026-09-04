@@ -1,14 +1,18 @@
-# Prendre en main le projet, Groupe 9
+# Prendre en main le projet
 
-ABOUTA Eudoxie, BAMBA Issouf, AHOGA Josias.
+Projet final du module Data Engineer, Spark et Scala. Groupe 9 : ABOUTA Eudoxie, BAMBA Issouf, AHOGA Josias.
 
-## En cinq minutes
+Ce document s'adresse à toute personne qui ouvre le projet pour la première fois et veut en voir le résultat, puis le rejouer.
 
-1. Ouvrir `output/dashboard.html` par double clic. C'est le résultat du pipeline, tel qu'il sera montré en démonstration. Le bouton en haut à droite bascule entre thème clair et thème sombre.
-2. Ouvrir `docs/architecture-medaillon.svg` pour comprendre le trajet des données.
-3. Lire `README.md`, section « Ce qui distingue cette livraison ».
+## En cinq minutes, sans rien installer
 
-## Exécuter le pipeline
+1. Ouvrir `output/dashboard.html` par double clic. C'est le tableau de bord produit par le pipeline lui même, à partir des sorties de la dernière exécution. Le bouton en haut à droite bascule entre thème clair et thème sombre.
+2. Ouvrir `docs/architecture-medaillon.svg` pour visualiser le trajet des données, de la lecture des quatre fichiers bruts jusqu'aux quatorze rapports métier.
+3. Lire la section « Ce qui distingue cette livraison » du `README.md`.
+
+## Rejouer le pipeline
+
+L'exécution complète dure environ deux minutes et demie sur un poste local. Elle réécrit `output/csv`, `output/parquet` et `output/dashboard.html`.
 
 Sous Windows, avec l'environnement portable préparé par `scripts/setup-windows.ps1` :
 
@@ -24,25 +28,45 @@ make test
 make run
 ```
 
-Sans rien installer du tout, avec Docker :
+Sans installer ni JDK, ni SBT, ni Spark, avec Docker :
 
 ```sh
 docker compose run --rm pipeline all
 ```
 
-L'exécution complète dure environ deux minutes et demie sur un poste local. Elle réécrit `output/csv`, `output/parquet` et `output/dashboard.html`.
+Le pipeline accepte une étape en argument : `all`, `ingestion`, `transformation`, `analytics` ou `benchmark`.
 
-## Ce qu'il reste à faire par le groupe
+```powershell
+.\make.ps1 run -Stage benchmark
+```
 
-1. Eudoxie et Issouf renseignent leur adresse e mail dans `EQUIPE.md`.
-2. Chaque membre relit le module dont il est relecteur, puis consigne la date et ses remarques dans `CONTRIBUTIONS.md`.
-3. Chaque membre complète sa charge de travail réelle et ses difficultés dans `CONTRIBUTIONS.md`.
-4. Eudoxie et Issouf créent leurs commits depuis leur propre poste. `scripts/commits-membres.ps1 -Liste` affiche le plan, fichier par fichier et étape par étape.
-5. Répéter la soutenance avec `GUIDE_SOUTENANCE.md` et `soutenance/Presentation_Groupe9.pptx`.
-6. Renommer l'archive `GROUPE_ABOUTA_BAMBA_AHOGA.zip` avant l'envoi.
+## Où regarder les résultats
+
+| Fichier | Contenu |
+| :-- | :-- |
+| `output/dashboard.html` | Tableau de bord décisionnel, thème clair et thème sombre |
+| `output/csv/quality_report` | Lignes lues, valides, rejetées, taux de rejet et références orphelines |
+| `output/csv/rejected_transactions` | Les lignes écartées, chacune avec son motif |
+| `output/csv/merchant_kpis` | Chiffre d'affaires, commission et classements par marchand |
+| `output/csv/cohort_matrix` | Matrice de rétention par cohorte |
+| `output/csv/rfm_customers` | Segmentation RFM client par client |
+| `output/csv/execution_timings` | Durée de chaque étape du pipeline |
+| `samples/` | Extraits de mille lignes, pour consulter sans ouvrir les fichiers complets |
+
+## Documents du projet
+
+| Document | Objet |
+| :-- | :-- |
+| `README.md` | Prérequis, compilation, exécution locale, déploiement sur cluster, configuration |
+| `EQUIPE.md` | Membres, rôles et périmètre de chacun |
+| `CONTRIBUTIONS.md` | Journal technique par module, décisions justifiées, relectures croisées |
+| `COUVERTURE_SUJET.md` | Correspondance question par question avec l'énoncé |
+| `VERIFICATION.md` | Vérifications réalisées et résultats observés |
+| `GUIDE_SOUTENANCE.md` | Déroulé de la soutenance et correspondance avec le cours |
+| `soutenance/` | Support de présentation |
 
 ## Points de vigilance
 
 Le JAR `dist/ecommerce-analytics.jar` est prévu pour Spark 3.5.6 et Scala 2.12. Il se lance avec `spark-submit`, jamais par double clic ni avec `java -jar` seul.
 
-Le code livré est une base complète à comprendre et à s'approprier, pas un livrable à recopier tel quel. Les champs d'identité et de contribution ne sont pas remplis avec des informations inventées : ils attendent des faits réels.
+Les données fournies sont synthétiques et contiennent volontairement des anomalies. Un rapport de qualité affichant zéro pour cent de rejet signalerait donc une erreur d'implémentation.
