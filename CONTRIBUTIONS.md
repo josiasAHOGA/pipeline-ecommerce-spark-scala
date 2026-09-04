@@ -182,7 +182,7 @@ Les chiffres ci dessous proviennent d'exécutions réelles et se reproduisent av
 | Rejets de jointure | 11 406 | trace `ENRICHISSEMENT` du pipeline |
 | Réconciliation | 138 047 = 1 890 + 11 406 + 124 751 | somme des trois compteurs |
 | Périmètre analysé | 124 751 transactions, 49 897 506,62 EUR, 10 193 clients, 586 marchands | `output/csv/summary` |
-| Durée du pipeline complet | environ 123 secondes en `local[2]` avec 3 Go | `output/csv/execution_timings` |
+| Durée du pipeline complet | environ 96 secondes en `local[2]` avec 3 Go | `output/csv/execution_timings` |
 | Écart avant et après optimisations | 84,84 % sur le total, une étape plus lente | `output/csv/benchmark_comparison` |
 | Reproduction sur poste macOS Apple Silicon | mêmes chiffres à l'unité : 124 751 transactions, 49 897 506,62 EUR, 3 760 suspectes, 512 incohérences catalogue | `bash scripts/run-macos.sh all` puis `output/csv/summary` |
 

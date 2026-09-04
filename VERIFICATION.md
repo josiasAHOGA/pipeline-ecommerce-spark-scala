@@ -15,11 +15,11 @@ Vérifications réalisées le 4 septembre 2026, heure locale Africa/Lagos. Les j
 ## Compilation et suite de tests
 
 * Compilation Scala réussie sur les douze fichiers source du projet.
-* Suite de régression : **16 cas exécutés, 16 réussis, 0 échec**. Le rapport JUnit correspondant est écrit dans `target/test-reports/regression.xml`.
+* Suite de régression : **20 cas exécutés, 20 réussis, 0 échec**. Le rapport JUnit correspondant est écrit dans `target/test-reports/regression.xml`.
 * Le JAR livré embarque le code du projet et Typesafe Config. Il n'embarque ni Spark ni Scala, qui sont fournis par `spark-submit`.
-* Empreinte SHA256 de `dist/ecommerce-analytics.jar` : `5ba72d47e0c8332a58bbb4276b683e0aa382615b795b46b6fab8c826f1df897e`
+* Empreinte SHA256 de `dist/ecommerce-analytics.jar` : `aba1c26a968bb4757c2c34937ec4c8406c966d36bea2dc22806f42403162d5d6`
 
-Les seize cas couvrent le parsing strict des dates, les frontières de `day_period` à 21h59, 22h00 et minuit, les bornes de validation, le comptage des valeurs nulles du rapport de qualité, la fenêtre glissante de sept jours, l'absence d'anticipation dans la moyenne historique, le seuil de deux signaux pour `is_suspicious`, les cohortes, les scores RFM, les classements marchands, la conservation des lignes aux jointures, les valeurs par défaut de configuration et la génération du tableau de bord.
+Les vingt cas couvrent le parsing strict des dates, les frontières de `day_period` à 21h59, 22h00 et minuit, les bornes de validation, le comptage des valeurs nulles du rapport de qualité, la fenêtre glissante de sept jours, l'absence d'anticipation dans la moyenne historique, le seuil de deux signaux pour `is_suspicious`, les cohortes, les scores RFM, les classements marchands, la conservation des lignes aux jointures, les valeurs par défaut de configuration et la génération du tableau de bord.
 
 ## Exécution du pipeline
 
@@ -27,15 +27,17 @@ Lancement via `spark-submit`, `local[2]`, mémoire du driver 3 Go. Code de sorti
 
 | Étape | Durée |
 | :-- | --: |
-| ingestion | 20,06 s |
-| validation | 0,73 s |
-| qualité | 14,99 s |
-| transformation | 22,46 s |
-| analytique | 27,08 s |
-| écriture | 37,29 s |
-| **total** | **122,94 s** |
+| ingestion | 12,26 s |
+| validation | 0,62 s |
+| qualité | 12,05 s |
+| transformation | 16,38 s |
+| analytique | 27,35 s |
+| écriture | 27,02 s |
+| **total** | **95,93 s** |
 
 Ces durées sont celles du fichier `output/csv/execution_timings` livré avec le projet. Une exécution concurrente avec d'autres travaux sur le même poste allonge sensiblement ce total : la mesure ci dessus a été prise sur une machine au repos.
+
+La diffusion par `broadcast` ayant été étendue aux trois référentiels, et non plus aux seuls marchands, le total est passé de 122,94 s à 95,93 s sur la même machine et dans les mêmes conditions, soit une réduction de 22 %. Le gain porte sur l'ingestion et la transformation, les deux étapes où les jointures interviennent.
 
 ## Contrôle indépendant des résultats
 
