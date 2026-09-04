@@ -9,10 +9,13 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.4.3"
 )
 Compile / mainClass := Some("com.ecommerce.analytics.MainApp")
-Runtime / fullClasspath := (Compile / fullClasspath).value
 Compile / run / fork := true
 Test / fork := true
 Test / parallelExecution := false
+// Spark est « provided » : spark-submit l'apporte, l'assembly ne l'embarque pas.
+// sbt run / runMain doivent pourtant voir Spark, d'où le classpath Compile (qui inclut provided).
+Compile / run := Defaults.runTask(Compile / fullClasspath, Compile / run / mainClass, Compile / run / runner).evaluated
+Compile / runMain := Defaults.runMainTask(Compile / fullClasspath, Compile / run / runner).evaluated
 javaOptions ++= Seq("-Xmx3g", "-Duser.timezone=UTC", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED")
 javaOptions ++= Seq("java.lang", "java.lang.invoke", "java.lang.reflect", "java.io", "java.net", "java.nio", "java.util", "java.util.concurrent", "java.util.concurrent.atomic", "sun.nio.cs", "sun.security.action", "sun.util.calendar").map(p => s"--add-opens=java.base/$p=ALL-UNNAMED")
 Test / test := (Test / runMain).toTask(" com.ecommerce.RegressionSuite").value
