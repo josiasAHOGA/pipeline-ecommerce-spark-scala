@@ -17,7 +17,7 @@ Vérifications réalisées le 4 septembre 2026, heure locale Africa/Lagos. Les j
 * Compilation Scala réussie sur les douze fichiers source du projet.
 * Suite de régression : **20 cas exécutés, 20 réussis, 0 échec**. Le rapport JUnit correspondant est écrit dans `target/test-reports/regression.xml`.
 * Le JAR livré embarque le code du projet et Typesafe Config. Il n'embarque ni Spark ni Scala, qui sont fournis par `spark-submit`.
-* Empreinte SHA256 de `dist/ecommerce-analytics.jar` : `aba1c26a968bb4757c2c34937ec4c8406c966d36bea2dc22806f42403162d5d6`
+* Empreinte SHA256 de `dist/ecommerce-analytics.jar` : `32d0141e094aca2f426120d6308d337219ace2ea8b8974044aa681dfee653dc4`
 
 Les vingt cas couvrent le parsing strict des dates, les frontières de `day_period` à 21h59, 22h00 et minuit, les bornes de validation, le comptage des valeurs nulles du rapport de qualité, la fenêtre glissante de sept jours, l'absence d'anticipation dans la moyenne historique, le seuil de deux signaux pour `is_suspicious`, les cohortes, les scores RFM, les classements marchands, la conservation des lignes aux jointures, les valeurs par défaut de configuration et la génération du tableau de bord.
 
@@ -27,17 +27,27 @@ Lancement via `spark-submit`, `local[2]`, mémoire du driver 3 Go. Code de sorti
 
 | Étape | Durée |
 | :-- | --: |
-| ingestion | 12,26 s |
-| validation | 0,62 s |
-| qualité | 12,05 s |
-| transformation | 16,38 s |
-| analytique | 27,35 s |
-| écriture | 27,02 s |
-| **total** | **95,93 s** |
+| ingestion | 14,37 s |
+| validation | 0,74 s |
+| qualité | 14,68 s |
+| transformation | 17,24 s |
+| analytique | 29,92 s |
+| écriture | 30,70 s |
+| **total** | **107,98 s** |
 
-Ces durées sont celles du fichier `output/csv/execution_timings` livré avec le projet. Une exécution concurrente avec d'autres travaux sur le même poste allonge sensiblement ce total : la mesure ci dessus a été prise sur une machine au repos.
+Ces durées sont celles du fichier `output/csv/execution_timings` livré avec le projet.
 
-La diffusion par `broadcast` ayant été étendue aux trois référentiels, et non plus aux seuls marchands, le total est passé de 122,94 s à 95,93 s sur la même machine et dans les mêmes conditions, soit une réduction de 22 %. Le gain porte sur l'ingestion et la transformation, les deux étapes où les jointures interviennent.
+### Variabilité de la mesure
+
+Quatre exécutions du même code, sur la même machine et dans la même journée, ont donné 95,93 s, 107,98 s, 122,94 s et 131,30 s. L'écart entre la plus rapide et la plus lente atteint 37 %.
+
+Cette dispersion vient de ce que le poste n'est pas dédié : compilation, navigateur et services système se disputent les deux cœurs alloués à Spark. Elle impose une conclusion nette et nous la formulons plutôt que de la taire : sur ce jeu de données et sur ce matériel, un écart de moins de 30 % entre deux exécutions ne prouve rien. Toute comparaison de performance présentée dans ce projet doit être lue avec cette réserve.
+
+### Un réglage essayé, mesuré, puis retiré
+
+L'écriture des transactions enrichies a été testée sur huit partitions au lieu d'une, afin de paralléliser la production des fichiers. La mesure a montré l'inverse de l'effet attendu : l'étape d'écriture est passée de 30,70 s à 41,42 s, et le total de 107,98 s à 131,30 s.
+
+L'explication tient au contexte d'exécution. Sur `local[2]`, deux cœurs seulement écrivent, si bien que huit partitions n'apportent aucun parallélisme réel tout en multipliant les ouvertures de fichiers et les métadonnées. Le mécanisme est conservé, paramétrable par `app.data.output.partitions-large`, mais sa valeur reste à 1 pour une exécution locale. Sur un cluster disposant de plusieurs exécuteurs, ce réglage retrouve son intérêt et se relève dans le fichier de configuration du cluster.
 
 ## Contrôle indépendant des résultats
 

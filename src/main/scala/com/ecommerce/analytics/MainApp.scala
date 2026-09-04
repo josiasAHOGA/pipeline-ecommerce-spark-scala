@@ -51,7 +51,11 @@ object MainApp {
     val timings = ArrayBuffer.empty[Timing]
     val mode = if(optimized) "avec" else "sans"
     val cache = new SparkOptimizations(c,optimized)
+    cache.appliquer(spark)
     val writer = new ResultWriter(c,out)
+    // Jeux ecrits a l'echelle des transactions : ils gardent plusieurs
+    // partitions, la concentration sur un seul fichier y couterait cher.
+    val volumineux = Set("enriched_transactions","join_rejections")
     val startAll = System.nanoTime()
     def timed[A](name: String)(f: => A): A = {
       println(s"DÉBUT $name ${Instant.now()}")
@@ -95,7 +99,7 @@ object MainApp {
         prepared.foreach { case(name,df) =>
           println("RÉSULTAT : "+name)
           df.show(c.getInt("app.analytics.preview-rows"),false)
-          writer.write(name,df)
+          writer.write(name,df,volumineux(name))
         }
       }
       timings += Timing(mode,"total",(System.nanoTime()-startAll)/1e6)

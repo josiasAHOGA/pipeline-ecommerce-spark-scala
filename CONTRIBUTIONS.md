@@ -75,7 +75,7 @@ Stratégie de jointure retenue, table par table, comme demandé par la Question 
 
 | Table | Type | Clé | Justification |
 | :-- | :-- | :-- | :-- |
-| `transactions` | table de départ | — | table de faits : elle impose la granularité, une ligne de sortie par transaction |
+| `transactions` | table de départ | aucune | table de faits : elle impose la granularité, une ligne de sortie par transaction |
 | `users` | `left` | `user_id` | conserver la transaction pour pouvoir expliquer une référence absente au lieu de la faire disparaître |
 | `products` | `left` | `product_id` | même raison, plus récupération du prix, de la note et du stock |
 | `merchants` | `left` | `merchant_id` | même raison, plus diffusion de la table par `broadcast` |
@@ -182,7 +182,7 @@ Les chiffres ci dessous proviennent d'exécutions réelles et se reproduisent av
 | Rejets de jointure | 11 406 | trace `ENRICHISSEMENT` du pipeline |
 | Réconciliation | 138 047 = 1 890 + 11 406 + 124 751 | somme des trois compteurs |
 | Périmètre analysé | 124 751 transactions, 49 897 506,62 EUR, 10 193 clients, 586 marchands | `output/csv/summary` |
-| Durée du pipeline complet | environ 96 secondes en `local[2]` avec 3 Go | `output/csv/execution_timings` |
+| Durée du pipeline complet | environ 108 secondes en `local[2]` avec 3 Go, à plus ou moins 20 % près | `output/csv/execution_timings` |
 | Écart avant et après optimisations | 84,84 % sur le total, une étape plus lente | `output/csv/benchmark_comparison` |
 | Reproduction sur poste macOS Apple Silicon | mêmes chiffres à l'unité : 124 751 transactions, 49 897 506,62 EUR, 3 760 suspectes, 512 incohérences catalogue | `bash scripts/run-macos.sh all` puis `output/csv/summary` |
 
@@ -244,3 +244,17 @@ Les utilisateurs sans achat retenu n'ont pas de score RFM.
 23. Paramètres temporels transportés par une case class sérialisable : `TimeFeatures.TimeSettings` est construit une fois côté pilote, puis capturé par l'UDF. Capturer l'objet `Config` lui même provoquerait une `NotSerializableException` à l'envoi des tâches. C'est aussi ce qui rend la logique testable sans SparkSession.
 
 24. Outillage de démonstration macOS confiné : `scripts/setup-macos.sh` installe JDK 17, sbt et Spark dans le seul répertoire `~/.ecommerce-demo`, caches de dépendances compris, sans sudo, sans Homebrew et sans toucher `~/.sbt` ni `~/.ivy2`. `scripts/uninstall-macos.sh` supprime l'ensemble en une commande. Un poste de démonstration retrouve donc son état initial, ce qu'une installation système ne garantit pas.
+
+## Décisions techniques complémentaires : optimisation Spark
+
+21. Exécution adaptative activée explicitement : `SparkOptimizations.appliquer` positionne `spark.sql.adaptive.enabled`, `coalescePartitions.enabled` et `skewJoin.enabled` sur la session. Spark réoptimise alors le plan pendant l'exécution, à partir des statistiques réelles des échanges : il fusionne les partitions de shuffle devenues trop petites et découpe celles qui sont anormalement grosses. Ces trois clés sont modifiables après la création de la session, contrairement au sérialiseur, et elles suivent le drapeau du mode `benchmark` pour que la comparaison porte sur des exécutions réellement différentes.
+
+22. Sérialiseur laissé par défaut, volontairement : `spark.serializer` est un paramètre statique, non modifiable une fois la session créée. Passer à Kryo n'apporterait rien ici, puisque toutes nos opérations passent par l'API DataFrame, dont le moteur Tungsten gère déjà un format binaire compact. Kryo profite aux RDD et aux objets personnalisés, que nous n'utilisons pas.
+
+23. Le fichier unique en sortie est un choix, pas un réflexe : ramener un jeu à une seule partition concentre l'écriture sur une tâche unique, et avec elle toutes les transformations en amont si le jeu n'a pas déjà été matérialisé. Le coût est nul sur un rapport agrégé de quelques centaines de lignes, qui reste donc en un fichier consultable directement. Il est réel sur les transactions enrichies, d'où le paramètre distinct `app.data.output.partitions-large`, appliqué à `enriched_transactions` et `join_rejections`.
+
+24. Ce paramètre est resté à 1 en local, sur la foi de la mesure et non de la théorie : porté à 8, il a fait passer l'étape d'écriture de 30,70 s à 41,42 s. Sur `local[2]`, deux cœurs seulement écrivent, si bien que huit partitions n'apportent aucun parallélisme tout en multipliant les ouvertures de fichiers. Le mécanisme est conservé et documenté parce qu'il redevient utile dès que le cluster fournit plusieurs exécuteurs, mais nous ne prétendons pas à un gain que la mesure ne montre pas.
+
+25. Toutes les remontées vers le pilote sont bornées : `DashboardReport` applique un `limit` avant chaque `collect`, et aucune action ne ramène un volume non borné. Un `collect` sur les 124 751 transactions enrichies ferait tomber le pilote sans rien apporter, puisque la restitution n'affiche que des agrégats.
+
+26. Les seuils de partitionnement de shuffle sont configurables et non codés en dur : `app.spark.shuffle.partitions` vaut 8, valeur adaptée à un jeu de cette taille, là où la valeur par défaut de 200 produirait des partitions de quelques kilooctets et un surcoût d'ordonnancement supérieur au calcul lui même.
