@@ -38,9 +38,19 @@ case "$CIBLE" in
   test)     sbt test ;;
   assembly) assembler ;;
   all|ingestion|transformation|analytics|benchmark)
-    assembler_si_necessaire
-    spark-submit --master "$MASTER" --driver-memory "$DRIVER_MEM" \
-      --class com.ecommerce.analytics.MainApp "$JAR" "$CIBLE"
+    if command -v spark-submit >/dev/null 2>&1; then
+      # Chemin nominal : exactement la commande de déploiement du README.
+      assembler_si_necessaire
+      spark-submit --master "$MASTER" --driver-memory "$DRIVER_MEM" \
+        --class com.ecommerce.analytics.MainApp "$JAR" "$CIBLE"
+    else
+      # Repli si la distribution Spark n'est pas encore installée. build.sbt
+      # place volontairement les dépendances « provided » sur le classpath de
+      # run, donc le pipeline s'exécute à l'identique, Spark venant des JAR
+      # résolus par sbt au lieu de la distribution.
+      echo "spark-submit introuvable, exécution via sbt (résultats identiques)."
+      sbt "runMain com.ecommerce.analytics.MainApp $CIBLE"
+    fi
     echo ""
     echo "Sorties CSV et Parquet : output/"
     [ -f output/dashboard.html ] && echo "Tableau de bord : open output/dashboard.html"

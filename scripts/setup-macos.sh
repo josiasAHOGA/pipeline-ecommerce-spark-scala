@@ -26,7 +26,13 @@ esac
 
 JDK_URL="https://api.adoptium.net/v3/binary/latest/${JDK_MAJOR}/ga/mac/${JDK_ARCH}/jdk/hotspot/normal/eclipse"
 SBT_URL="https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz"
-SPARK_URL="https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz"
+# Les miroirs actifs ne servent que les versions courantes ; archive.apache.org
+# conserve toutes les versions mais débite lentement. On tente donc le miroir
+# rapide, puis l'archive.
+SPARK_URLS=(
+  "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz"
+  "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz"
+)
 
 mkdir -p "$ECOM_HOME/telechargements" "$ECOM_HOME/cache" "$ECOM_HOME/tmp"
 
@@ -60,11 +66,14 @@ else
   tar -xzf "$ECOM_HOME/telechargements/sbt.tgz" -C "$ECOM_HOME"
 fi
 
-echo "3/4 Apache Spark ${SPARK_VERSION}"
+echo "3/4 Apache Spark ${SPARK_VERSION} (environ 380 Mo)"
 if [ -x "$ECOM_HOME/spark/bin/spark-submit" ]; then
   echo "  déjà installé"
 else
-  recuperer "$SPARK_URL" "$ECOM_HOME/telechargements/spark.tgz"
+  for url in "${SPARK_URLS[@]}"; do
+    if recuperer "$url" "$ECOM_HOME/telechargements/spark.tgz"; then break; fi
+    echo "  miroir indisponible, essai suivant"
+  done
   rm -rf "$ECOM_HOME/spark" && mkdir -p "$ECOM_HOME/spark"
   tar -xzf "$ECOM_HOME/telechargements/spark.tgz" -C "$ECOM_HOME/spark" --strip-components=1
 fi
