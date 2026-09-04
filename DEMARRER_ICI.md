@@ -21,7 +21,16 @@ Sous Windows, avec l'environnement portable préparé par `scripts/setup-windows
 .\make.ps1 run
 ```
 
-Sous Linux ou macOS, avec SBT et Spark installés :
+Sous macOS, sans rien installer au niveau système. Le toolchain complet, JDK 17, sbt et Spark, est déposé dans le seul répertoire `~/.ecommerce-demo` :
+
+```sh
+bash scripts/setup-macos.sh          # installation confinée, une seule fois
+bash scripts/run-macos.sh test       # suite de régression
+bash scripts/run-macos.sh all        # pipeline complet via spark-submit
+bash scripts/uninstall-macos.sh      # tout supprimer après la démonstration
+```
+
+Sous Linux, ou sous macOS avec SBT et Spark déjà installés :
 
 ```sh
 make test
